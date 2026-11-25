@@ -1,5 +1,5 @@
 import React from 'react';
-import { CloudLightning, Sparkles, UtensilsCrossed } from 'lucide-react';
+import { CloudLightning, Shirt, Sparkles, UtensilsCrossed } from 'lucide-react';
 import { ThemeId } from '../types/tracker';
 
 interface ThemeSwitcherProps {
@@ -30,6 +30,12 @@ const THEMES: {
     label: 'Tomatoes & Soup Bowl theme',
     swatch: 'linear-gradient(135deg, #fca5a5, #fed7aa)',
     icon: UtensilsCrossed,
+  },
+  {
+    id: 'copper',
+    label: 'Cozy Knits & Copper theme',
+    swatch: 'linear-gradient(135deg, #f6c4a0, #c8764b)',
+    icon: Shirt,
   },
 ];
 

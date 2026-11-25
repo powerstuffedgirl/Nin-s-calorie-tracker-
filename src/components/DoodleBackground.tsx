@@ -183,6 +183,153 @@ function CrayonSoupBowlSvg({ className }: { className?: string }) {
   );
 }
 
+function CrayonKnittedSockSvg({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 110 120" fill="none" className={className} aria-hidden="true">
+      <g filter="url(#crayon-texture)" strokeLinecap="round" strokeLinejoin="round">
+        {/* Ribbed cuff */}
+        <rect
+          x="44"
+          y="12"
+          width="36"
+          height="16"
+          rx="5"
+          fill="#fef3c7"
+          fillOpacity="0.78"
+          stroke="#7c2d12"
+          strokeWidth="2.6"
+        />
+        <path d="M52 14 V26 M60 14 V26 M68 14 V26 M74 14 V26" stroke="#9a3412" strokeWidth="1.8" opacity="0.75" />
+        {/* Sock leg & cozy foot */}
+        <path
+          d="M46 28 V66 L24 80 C14 86, 14 102, 26 106 C36 110, 50 104, 62 96 L74 86 C78 82, 80 76, 80 68 V28 Z"
+          fill="#fed7aa"
+          fillOpacity="0.72"
+          stroke="#7c2d12"
+          strokeWidth="2.8"
+        />
+        {/* Contrasting toe & heel patches */}
+        <path
+          d="M27 78 C20 84, 18 96, 26 104 C33 106, 38 102, 41 96 C36 90, 32 84, 27 78 Z"
+          fill="#c26438"
+          fillOpacity="0.55"
+          stroke="#7c2d12"
+          strokeWidth="2.2"
+        />
+        <path
+          d="M78 68 C70 68, 65 74, 67 82 C72 86, 77 82, 79 76 Z"
+          fill="#c26438"
+          fillOpacity="0.5"
+          stroke="#7c2d12"
+          strokeWidth="2"
+        />
+        {/* Knitted fair-isle zig-zag stripes */}
+        <path d="M47 42 L53 37 L59 42 L65 37 L71 42 L79 37" stroke="#9a3412" strokeWidth="2.3" />
+        <path d="M47 54 L53 49 L59 54 L65 49 L71 54 L79 49" stroke="#b45309" strokeWidth="2.1" opacity="0.85" />
+        <circle cx="56" cy="64" r="2" fill="#7c2d12" opacity="0.65" />
+        <circle cx="66" cy="62" r="2" fill="#7c2d12" opacity="0.65" />
+      </g>
+    </svg>
+  );
+}
+
+function CrayonKnittedSweaterSvg({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 140 120" fill="none" className={className} aria-hidden="true">
+      <g filter="url(#crayon-texture)" strokeLinecap="round" strokeLinejoin="round">
+        {/* Sweater body & sleeves */}
+        <path
+          d="M48 24 L26 36 L12 78 L28 84 L40 54 V102 H100 V54 L112 84 L128 78 L114 36 L92 24 C84 32, 56 32, 48 24 Z"
+          fill="#fde6d2"
+          fillOpacity="0.72"
+          stroke="#7c2d12"
+          strokeWidth="2.8"
+        />
+        {/* Ribbed turtleneck collar */}
+        <path
+          d="M48 24 C54 14, 86 14, 92 24 C84 32, 56 32, 48 24 Z"
+          fill="#e7a67c"
+          fillOpacity="0.7"
+          stroke="#7c2d12"
+          strokeWidth="2.6"
+        />
+        <path d="M58 18 V27 M66 17 V29 M74 17 V29 M82 18 V27" stroke="#7c2d12" strokeWidth="1.7" opacity="0.7" />
+        {/* Ribbed cuffs & hem */}
+        <path d="M15 71 L31 77" stroke="#9a3412" strokeWidth="2.2" />
+        <path d="M125 71 L109 77" stroke="#9a3412" strokeWidth="2.2" />
+        <path d="M40 92 H100" stroke="#9a3412" strokeWidth="2.2" />
+        <path d="M50 93 V101 M60 93 V101 M70 93 V101 M80 93 V101 M90 93 V101" stroke="#9a3412" strokeWidth="1.7" opacity="0.7" />
+        {/* Nordic fair-isle diamond chest band */}
+        <path d="M42 46 H98" stroke="#9a3412" strokeWidth="2" opacity="0.75" />
+        <path d="M42 62 H98" stroke="#9a3412" strokeWidth="2" opacity="0.75" />
+        <path
+          d="M46 54 L53 48 L60 54 L53 60 Z M63 54 L70 48 L77 54 L70 60 Z M80 54 L87 48 L94 54 L87 60 Z"
+          fill="#c26438"
+          fillOpacity="0.45"
+          stroke="#7c2d12"
+          strokeWidth="1.9"
+        />
+        {/* Vertical cable knit lines */}
+        <path d="M54 68 C51 74, 57 80, 54 87" stroke="#b45309" strokeWidth="2" opacity="0.75" />
+        <path d="M70 68 C67 74, 73 80, 70 87" stroke="#b45309" strokeWidth="2" opacity="0.75" />
+        <path d="M86 68 C83 74, 89 80, 86 87" stroke="#b45309" strokeWidth="2" opacity="0.75" />
+      </g>
+    </svg>
+  );
+}
+
+function CrayonWinterCapSvg({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 120 110" fill="none" className={className} aria-hidden="true">
+      <g filter="url(#crayon-texture)" strokeLinecap="round" strokeLinejoin="round">
+        {/* Fluffy pom-pom */}
+        <circle
+          cx="60"
+          cy="22"
+          r="12"
+          fill="#fff7ed"
+          fillOpacity="0.88"
+          stroke="#7c2d12"
+          strokeWidth="2.4"
+        />
+        <path d="M53 16 L60 22 L67 16 M52 24 L60 22 L68 25" stroke="#c26438" strokeWidth="1.7" opacity="0.65" />
+        {/* Beanie dome */}
+        <path
+          d="M22 72 C22 44, 38 30, 60 30 C82 30, 98 44, 98 72 Z"
+          fill="#f2b890"
+          fillOpacity="0.74"
+          stroke="#7c2d12"
+          strokeWidth="2.8"
+        />
+        {/* Knit stitch pattern on dome */}
+        <path d="M36 46 C44 40, 52 38, 60 38 C68 38, 76 40, 84 46" stroke="#9a3412" strokeWidth="2" opacity="0.7" />
+        <path d="M28 58 L36 52 L44 58 L52 52 L60 58 L68 52 L76 58 L84 52 L92 58" stroke="#9a3412" strokeWidth="2.2" />
+        <circle cx="44" cy="46" r="2" fill="#7c2d12" opacity="0.65" />
+        <circle cx="60" cy="45" r="2" fill="#7c2d12" opacity="0.65" />
+        <circle cx="76" cy="46" r="2" fill="#7c2d12" opacity="0.65" />
+        {/* Folded ribbed cuff */}
+        <rect
+          x="16"
+          y="68"
+          width="88"
+          height="22"
+          rx="10"
+          fill="#fde6d2"
+          fillOpacity="0.85"
+          stroke="#7c2d12"
+          strokeWidth="2.8"
+        />
+        <path
+          d="M28 70 V88 M40 70 V88 M52 70 V88 M64 70 V88 M76 70 V88 M88 70 V88"
+          stroke="#9a3412"
+          strokeWidth="2"
+          opacity="0.72"
+        />
+      </g>
+    </svg>
+  );
+}
+
 export const DoodleBackground: React.FC<DoodleBackgroundProps> = ({ theme }) => {
   return (
     <div
@@ -262,6 +409,20 @@ export const DoodleBackground: React.FC<DoodleBackgroundProps> = ({ theme }) => 
           <CrayonTomatoSvg className="animate-doodle-b absolute top-[15%] left-[56%] hidden w-16 opacity-30 lg:block" />
           <CrayonSparkleSvg className="animate-doodle-twinkle absolute top-[62%] right-[3%] w-11 opacity-50" color="#ea580c" />
           <CrayonSparkleSvg className="animate-doodle-twinkle absolute bottom-[36%] left-[3%] hidden w-9 opacity-45 lg:block" color="#16a34a" />
+        </>
+      )}
+
+      {theme === 'copper' && (
+        <>
+          <CrayonKnittedSweaterSvg className="animate-doodle-a absolute top-28 left-[1.2%] hidden w-32 opacity-52 xl:block xl:w-36" />
+          <CrayonWinterCapSvg className="animate-doodle-b absolute top-24 right-[1.8%] w-22 opacity-44 md:w-28 md:opacity-55" />
+          <CrayonKnittedSockSvg className="animate-doodle-b absolute top-[44%] left-[1.4%] w-20 opacity-46 xl:w-24" />
+          <CrayonWinterCapSvg className="animate-doodle-a absolute bottom-20 left-[2%] w-26 opacity-48 -rotate-6" />
+          <CrayonKnittedSweaterSvg className="animate-doodle-b absolute bottom-14 right-[1.6%] w-32 opacity-48 rotate-3" />
+          <CrayonKnittedSockSvg className="animate-doodle-a absolute top-[54%] right-[2%] w-22 opacity-48 -scale-x-100" />
+          <CrayonKnittedSockSvg className="animate-doodle-b absolute top-[14%] left-[56%] hidden w-16 opacity-34 lg:block" />
+          <CrayonSparkleSvg className="animate-doodle-twinkle absolute bottom-[34%] left-[3.2%] hidden w-9 opacity-50 lg:block" color="#9a3412" />
+          <CrayonSparkleSvg className="animate-doodle-twinkle absolute top-[24%] right-[16%] hidden w-9 opacity-48 lg:block" color="#b45309" />
         </>
       )}
     </div>

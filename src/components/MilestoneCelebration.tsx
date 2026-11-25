@@ -12,6 +12,7 @@ const THEME_CONFETTI: Record<ThemeId, string[]> = {
   unicorn: ['#ec4899', '#f472b6', '#c084fc', '#fbbf24', '#38bdf8'],
   thunder: ['#f59e0b', '#facc15', '#3b82f6', '#ec4899', '#10b981'],
   soup: ['#ef4444', '#fb7185', '#f59e0b', '#22c55e', '#fde047'],
+  copper: ['#c26438', '#e08e60', '#b45309', '#f59e0b', '#7c2d12'],
 };
 
 export const MilestoneCelebration: React.FC<MilestoneCelebrationProps> = ({

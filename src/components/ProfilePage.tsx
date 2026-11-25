@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Check, Heart, RotateCcw, ShieldCheck } from 'lucide-react';
+import { Check, Eye, EyeOff, Heart, KeyRound, RotateCcw, Trash2 } from 'lucide-react';
 import { ProfileSettings } from '../types/tracker';
 import { formatWaterLiters, validateProfileForm } from '../utils/trackerLogic';
+import {
+  clearStoredGeminiApiKey,
+  loadStoredGeminiApiKey,
+  saveStoredGeminiApiKey,
+} from '../utils/storage';
+import { getBuildTimeGeminiApiKey } from '../utils/nutritionClient';
 
 interface ProfilePageProps {
   profile: ProfileSettings;
@@ -26,6 +32,37 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [savedNotice, setSavedNotice] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+
+  const buildTimeKey = getBuildTimeGeminiApiKey();
+  const [storedApiKey, setStoredApiKey] = useState(() => loadStoredGeminiApiKey());
+  const [apiKeyDraft, setApiKeyDraft] = useState(() => loadStoredGeminiApiKey());
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [apiKeyNotice, setApiKeyNotice] = useState<string | null>(null);
+
+  const handleSaveApiKey = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = apiKeyDraft.trim();
+    if (!trimmed) {
+      clearStoredGeminiApiKey();
+      setStoredApiKey('');
+      setApiKeyDraft('');
+      setApiKeyNotice('Saved API key cleared from this browser.');
+    } else {
+      saveStoredGeminiApiKey(trimmed);
+      setStoredApiKey(trimmed);
+      setApiKeyDraft(trimmed);
+      setApiKeyNotice('Gemini API key saved to this browser.');
+    }
+    window.setTimeout(() => setApiKeyNotice(null), 3500);
+  };
+
+  const handleClearApiKey = () => {
+    clearStoredGeminiApiKey();
+    setStoredApiKey('');
+    setApiKeyDraft('');
+    setApiKeyNotice('Saved API key removed from this browser.');
+    window.setTimeout(() => setApiKeyNotice(null), 3500);
+  };
 
   useEffect(() => {
     setCurrentWeightKg(String(profile.currentWeightKg));
@@ -288,17 +325,99 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </div>
           </section>
 
-          {/* Secure Environment Configuration Note (No client-side API key input per platform policy) */}
+          {/* Gemini API Key for GitHub Pages / Static Hosting */}
           <section className="glass-panel rounded-3xl p-6">
             <div className="flex items-center gap-2.5">
-              <ShieldCheck className="h-4 w-4" style={{ color: 'var(--accent-primary)' }} aria-hidden="true" />
+              <KeyRound className="h-4 w-4" style={{ color: 'var(--accent-primary)' }} aria-hidden="true" />
               <h2 className="font-display text-base font-bold" style={{ color: 'var(--ink-primary)' }}>
-                Connected Services & Privacy
+                Gemini API Key (AI Estimator)
               </h2>
             </div>
             <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--ink-secondary)' }}>
-              Your meals, hydration entries, and weight goals stay stored privately on your device. External nutrition service credentials are managed securely through workspace environment secrets rather than stored in browser form fields.
+              {buildTimeKey
+                ? 'A build-time VITE_GEMINI_API_KEY is already configured for this deployment. You can still store a personal fallback key below if needed.'
+                : 'Used by the AI Meal Tracker on GitHub Pages when VITE_GEMINI_API_KEY is not set at build time. Saved only in this browser\u2019s localStorage.'}
             </p>
+
+            <form onSubmit={handleSaveApiKey} className="mt-4 space-y-3" noValidate>
+              <div>
+                <label
+                  htmlFor="gemini-api-key"
+                  className="mb-1.5 block text-xs font-semibold"
+                  style={{ color: 'var(--ink-secondary)' }}
+                >
+                  Personal Gemini API key
+                </label>
+                <div className="glass-block flex items-center gap-1.5 rounded-xl px-2.5">
+                  <input
+                    id="gemini-api-key"
+                    type={showApiKey ? 'text' : 'password'}
+                    autoComplete="off"
+                    spellCheck={false}
+                    value={apiKeyDraft}
+                    onChange={(e) => setApiKeyDraft(e.target.value)}
+                    placeholder="AIza..."
+                    className="font-tabular min-h-[42px] w-full bg-transparent py-2 text-xs outline-none placeholder:text-black/35"
+                    style={{ color: 'var(--ink-primary)' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKey((prev) => !prev)}
+                    aria-label={showApiKey ? 'Hide Gemini API key' : 'Show Gemini API key'}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg hover:bg-white/50 transition-colors cursor-pointer"
+                    style={{ color: 'var(--ink-secondary)' }}
+                  >
+                    {showApiKey ? (
+                      <EyeOff className="h-4 w-4" aria-hidden="true" />
+                    ) : (
+                      <Eye className="h-4 w-4" aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="submit"
+                  className="min-h-[40px] rounded-xl px-4 py-2 text-xs font-semibold text-white shadow-xs transition-opacity hover:opacity-95 cursor-pointer"
+                  style={{ backgroundColor: 'var(--accent-primary)' }}
+                >
+                  Save API key
+                </button>
+                {storedApiKey && (
+                  <button
+                    type="button"
+                    onClick={handleClearApiKey}
+                    className="glass-block inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-colors hover:bg-white/60 cursor-pointer"
+                    style={{ color: 'var(--ink-primary)' }}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                    Clear key
+                  </button>
+                )}
+                <span className="text-[11px] font-medium" style={{ color: 'var(--ink-muted)' }}>
+                  {buildTimeKey
+                    ? 'Build env key active'
+                    : storedApiKey
+                    ? 'Saved in localStorage'
+                    : 'No local key saved'}
+                </span>
+              </div>
+
+              {apiKeyNotice && (
+                <p
+                  role="status"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700"
+                >
+                  <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                  {apiKeyNotice}
+                </p>
+              )}
+
+              <p className="text-[11px] leading-relaxed" style={{ color: 'var(--ink-muted)' }}>
+                Note: Static GitHub Pages apps send requests directly from your browser to Google&apos;s Gemini API. Use an API key restricted to your GitHub Pages domain and avoid saving keys on shared devices.
+              </p>
+            </form>
           </section>
 
           {/* Reset Sample Data */}

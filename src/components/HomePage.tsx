@@ -51,6 +51,7 @@ interface HomePageProps {
   showComposer: boolean;
   onToggleComposer: (open: boolean) => void;
   aiInputRef?: React.RefObject<HTMLInputElement | null>;
+  onOpenProfile?: () => void;
 }
 
 function MiniSoupBowlIcon() {
@@ -93,6 +94,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   showComposer,
   onToggleComposer,
   aiInputRef,
+  onOpenProfile,
 }) => {
   const [filterMode, setFilterMode] = useState<'selected' | 'all'>('all');
   const [name, setName] = useState('');
@@ -395,6 +397,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             inputRef={aiInputRef}
             onLogAiItems={onLogAiItems}
             onUndoLoggedIds={onUndoLoggedIds}
+            onOpenProfile={onOpenProfile}
           />
 
           {/* Featured One-Tap Quick-Add: Begova čorba (~290 kcal) */}

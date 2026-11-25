@@ -16,6 +16,11 @@ import {
   validateProfileForm,
 } from './trackerLogic';
 import { MealEntry, WaterEntry } from '../types/tracker';
+import {
+  isStaticPagesHost,
+  resolveClientGeminiApiKey,
+  shouldUseClientGemini,
+} from './nutritionClient';
 
 const sampleMeals: MealEntry[] = [
   {
@@ -189,4 +194,30 @@ test('scaleMealMacros scales calories and macros proportionally for portion adju
   const scaledLarge = scaleMealMacros({ calories: 300, protein: 20, carbs: 30, fat: 10 }, 1.5);
   assert.deepEqual(scaledLarge, { calories: 450, protein: 30, carbs: 45, fat: 15 });
 });
+
+test('resolveClientGeminiApiKey prefers VITE_GEMINI_API_KEY and falls back to stored localStorage key', () => {
+  assert.equal(resolveClientGeminiApiKey('env-key-123', 'local-key-456'), 'env-key-123');
+  assert.equal(resolveClientGeminiApiKey('', '  local-key-456  '), 'local-key-456');
+  assert.equal(resolveClientGeminiApiKey('MY_GEMINI_API_KEY', 'local-key-456'), 'local-key-456');
+  assert.equal(resolveClientGeminiApiKey('   ', ''), null);
+});
+
+test('shouldUseClientGemini routes github.io or explicit client keys to browser Gemini SDK and keeps localhost on server proxy by default', () => {
+  assert.equal(isStaticPagesHost('nin.github.io'), true);
+  assert.equal(isStaticPagesHost('localhost'), false);
+
+  assert.equal(
+    shouldUseClientGemini({ hostname: 'nin.github.io', envKey: '', storedKey: '' }),
+    true
+  );
+  assert.equal(
+    shouldUseClientGemini({ hostname: 'localhost', envKey: '', storedKey: '' }),
+    false
+  );
+  assert.equal(
+    shouldUseClientGemini({ hostname: 'localhost', envKey: '', storedKey: 'AIza-user-key' }),
+    true
+  );
+});
+
 

@@ -4,8 +4,11 @@ import { MealType } from '../types/tracker';
 import {
   MEAL_TYPES,
   NormalizedAiMealItem,
-  normalizeAiMealItems,
 } from '../utils/trackerLogic';
+import {
+  estimateNutrition,
+  NutritionEstimateError,
+} from '../utils/nutritionClient';
 
 interface LoggedAiBatch {
   ids: string[];
@@ -22,6 +25,7 @@ interface AiMealLoggerProps {
     mealType: MealType
   ) => string[];
   onUndoLoggedIds: (ids: string[]) => void;
+  onOpenProfile?: () => void;
 }
 
 const EXAMPLE_PROMPTS = [
@@ -36,6 +40,7 @@ export const AiMealLogger: React.FC<AiMealLoggerProps> = ({
   inputRef,
   onLogAiItems,
   onUndoLoggedIds,
+  onOpenProfile,
 }) => {
   const internalRef = useRef<HTMLInputElement | null>(null);
   const resolvedRef = inputRef ?? internalRef;
@@ -43,6 +48,7 @@ export const AiMealLogger: React.FC<AiMealLoggerProps> = ({
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const [lastBatch, setLastBatch] = useState<LoggedAiBatch | null>(null);
 
   const selectedLabel =
@@ -52,48 +58,32 @@ export const AiMealLogger: React.FC<AiMealLoggerProps> = ({
     const trimmed = textToEstimate.trim();
     if (!trimmed) {
       setError('Type any meal and portion — e.g. "1 bowl ramen" or "2 slices burek".');
+      setErrorCode('INVALID_INPUT');
       return;
     }
 
     setLoading(true);
     setError(null);
+    setErrorCode(null);
 
     try {
-      const response = await fetch('/api/nutrition/estimate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: trimmed,
-          mealType: selectedMealType,
-        }),
-      });
-
-      const payload = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        const message =
-          (payload && typeof payload.error === 'string' && payload.error) ||
-          'Could not estimate that meal right now. Please try again.';
-        setError(message);
-        return;
-      }
-
-      const items = normalizeAiMealItems(payload?.items);
-      if (items.length === 0) {
-        setError('Could not recognize foods in that entry. Try adding a portion size.');
-        return;
-      }
-
-      const createdIds = onLogAiItems(items, selectedMealType);
+      const result = await estimateNutrition(trimmed, selectedMealType);
+      const createdIds = onLogAiItems(result.items, selectedMealType);
       setLastBatch({
         ids: createdIds,
-        items,
-        note: typeof payload?.note === 'string' ? payload.note : '',
+        items: result.items,
+        note: result.note,
         mealType: selectedMealType,
       });
       setQuery('');
-    } catch {
-      setError('Network issue reaching the nutrition estimator. Please try again.');
+    } catch (err: unknown) {
+      if (err instanceof NutritionEstimateError) {
+        setError(err.message);
+        setErrorCode(err.code);
+      } else {
+        setError('Unable to estimate that meal right now. Please try again.');
+        setErrorCode('UNKNOWN');
+      }
     } finally {
       setLoading(false);
     }
@@ -206,13 +196,22 @@ export const AiMealLogger: React.FC<AiMealLoggerProps> = ({
         </div>
 
         {error && (
-          <p
+          <div
             role="alert"
             data-testid="ai-estimate-error"
-            className="mt-3 rounded-xl bg-red-50/85 px-3.5 py-2.5 text-xs font-semibold text-red-800 border border-red-200"
+            className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-red-50/85 px-3.5 py-2.5 text-xs font-semibold text-red-800 border border-red-200"
           >
-            {error}
-          </p>
+            <span>{error}</span>
+            {onOpenProfile && (errorCode === 'MISSING_KEY' || errorCode === 'AUTH_ERROR') && (
+              <button
+                type="button"
+                onClick={onOpenProfile}
+                className="rounded-lg bg-red-700 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-red-800 transition-colors cursor-pointer whitespace-nowrap"
+              >
+                Open Profile
+              </button>
+            )}
+          </div>
         )}
       </form>
 

@@ -13,11 +13,11 @@
   --orb-1: rgba(244, 114, 182, 0.24);
   --orb-2: rgba(251, 207, 232, 0.36);
   --orb-3: rgba(253, 230, 138, 0.24);
-  --surface-glass: rgba(255, 255, 255, 0.16);
-  --surface-glass-strong: rgba(255, 255, 255, 0.38);
-  --surface-block: rgba(255, 255, 255, 0.12);
-  --surface-block-active: rgba(255, 255, 255, 0.34);
-  --surface-subtle: rgba(255, 245, 249, 0.34);
+  --surface-glass: rgba(255, 255, 255, 0.08);
+  --surface-glass-strong: rgba(255, 255, 255, 0.28);
+  --surface-block: rgba(255, 255, 255, 0.05);
+  --surface-block-active: rgba(255, 255, 255, 0.24);
+  --surface-subtle: rgba(255, 245, 249, 0.22);
   --border-glass: rgba(219, 39, 119, 0.14);
   --ink-primary: #2d1b26;
   --ink-secondary: #684c5d;
@@ -40,11 +40,11 @@
   --orb-1: rgba(250, 204, 21, 0.34);
   --orb-2: rgba(147, 197, 253, 0.28);
   --orb-3: rgba(244, 114, 182, 0.18);
-  --surface-glass: rgba(255, 255, 255, 0.18);
-  --surface-glass-strong: rgba(255, 255, 255, 0.42);
-  --surface-block: rgba(255, 255, 255, 0.14);
-  --surface-block-active: rgba(255, 255, 255, 0.38);
-  --surface-subtle: rgba(254, 252, 232, 0.36);
+  --surface-glass: rgba(255, 255, 255, 0.1);
+  --surface-glass-strong: rgba(255, 255, 255, 0.32);
+  --surface-block: rgba(255, 255, 255, 0.06);
+  --surface-block-active: rgba(255, 255, 255, 0.28);
+  --surface-subtle: rgba(254, 252, 232, 0.24);
   --border-glass: rgba(161, 98, 7, 0.16);
   --ink-primary: #261e0c;
   --ink-secondary: #5c4918;
@@ -67,11 +67,11 @@
   --orb-1: rgba(239, 68, 68, 0.24);
   --orb-2: rgba(251, 146, 60, 0.22);
   --orb-3: rgba(253, 164, 175, 0.32);
-  --surface-glass: rgba(255, 255, 255, 0.18);
-  --surface-glass-strong: rgba(255, 255, 255, 0.42);
-  --surface-block: rgba(255, 255, 255, 0.14);
-  --surface-block-active: rgba(255, 255, 255, 0.38);
-  --surface-subtle: rgba(255, 241, 242, 0.36);
+  --surface-glass: rgba(255, 255, 255, 0.1);
+  --surface-glass-strong: rgba(255, 255, 255, 0.32);
+  --surface-block: rgba(255, 255, 255, 0.06);
+  --surface-block-active: rgba(255, 255, 255, 0.28);
+  --surface-subtle: rgba(255, 241, 242, 0.24);
   --border-glass: rgba(185, 28, 28, 0.15);
   --ink-primary: #2b1315;
   --ink-secondary: #683439;
@@ -85,6 +85,33 @@
   --macro-fat: #15803d;
   --water-fill: #0369a1;
   --water-soft: rgba(3, 105, 161, 0.12);
+}
+
+[data-theme="copper"] {
+  --bg-from: #f6d5be;
+  --bg-via: #e9b492;
+  --bg-to: #d7966e;
+  --orb-1: rgba(217, 119, 68, 0.34);
+  --orb-2: rgba(254, 215, 170, 0.44);
+  --orb-3: rgba(180, 83, 9, 0.24);
+  --surface-glass: rgba(255, 248, 242, 0.1);
+  --surface-glass-strong: rgba(255, 248, 242, 0.34);
+  --surface-block: rgba(255, 248, 242, 0.06);
+  --surface-block-active: rgba(255, 248, 242, 0.28);
+  --surface-subtle: rgba(255, 243, 234, 0.24);
+  --border-glass: rgba(154, 52, 18, 0.2);
+  --ink-primary: #2a140c;
+  --ink-secondary: #5c2e1c;
+  --ink-muted: #6f3b26;
+  --accent-primary: #9a3412;
+  --accent-primary-hover: #7c2d12;
+  --accent-soft: rgba(154, 52, 18, 0.15);
+  --accent-ring: #b84b1d;
+  --macro-protein: #9a3412;
+  --macro-carbs: #a16207;
+  --macro-fat: #6d28d9;
+  --water-fill: #0369a1;
+  --water-soft: rgba(3, 105, 161, 0.14);
 }
 
 html,
@@ -110,59 +137,59 @@ body {
 .glass-panel {
   background-color: transparent;
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E"),
-    linear-gradient(155deg, rgba(255, 255, 255, 0.32) 0%, var(--surface-glass) 100%);
-  backdrop-filter: blur(26px) saturate(112%);
-  -webkit-backdrop-filter: blur(26px) saturate(112%);
-  border: 1px solid rgba(255, 255, 255, 0.62);
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E"),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.2) 0%, var(--surface-glass) 100%);
+  backdrop-filter: blur(22px) saturate(114%);
+  -webkit-backdrop-filter: blur(22px) saturate(114%);
+  border: 1px solid rgba(255, 255, 255, 0.54);
   box-shadow:
     0 14px 34px -18px rgba(45, 27, 38, 0.16),
     0 0 0 1px var(--border-glass),
-    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
     inset 0 -1px 1px rgba(45, 27, 38, 0.035);
 }
 
 .glass-panel-strong {
   background-color: transparent;
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E"),
-    linear-gradient(155deg, rgba(255, 255, 255, 0.56) 0%, var(--surface-glass-strong) 100%);
-  backdrop-filter: blur(30px) saturate(114%);
-  -webkit-backdrop-filter: blur(30px) saturate(114%);
-  border: 1px solid rgba(255, 255, 255, 0.76);
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E"),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.44) 0%, var(--surface-glass-strong) 100%);
+  backdrop-filter: blur(28px) saturate(116%);
+  -webkit-backdrop-filter: blur(28px) saturate(116%);
+  border: 1px solid rgba(255, 255, 255, 0.68);
   box-shadow:
     0 18px 38px -16px rgba(45, 27, 38, 0.18),
     0 0 0 1px var(--border-glass),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
     inset 0 -1px 1px rgba(45, 27, 38, 0.04);
 }
 
 .glass-block {
   background-color: transparent;
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E"),
-    linear-gradient(158deg, rgba(255, 255, 255, 0.28) 0%, var(--surface-block) 100%);
-  backdrop-filter: blur(20px) saturate(110%);
-  -webkit-backdrop-filter: blur(20px) saturate(110%);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.065'/%3E%3C/svg%3E"),
+    linear-gradient(158deg, rgba(255, 255, 255, 0.16) 0%, var(--surface-block) 100%);
+  backdrop-filter: blur(18px) saturate(112%);
+  -webkit-backdrop-filter: blur(18px) saturate(112%);
+  border: 1px solid rgba(255, 255, 255, 0.52);
   box-shadow:
     0 8px 20px -12px rgba(45, 27, 38, 0.15),
     0 0 0 1px var(--border-glass),
-    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    inset 0 1px 0 rgba(255, 255, 255, 0.68),
     inset 0 -1px 2px rgba(45, 27, 38, 0.045);
 }
 
 .glass-block-active {
   background-color: transparent;
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E"),
-    linear-gradient(158deg, rgba(255, 255, 255, 0.54) 0%, var(--surface-block-active) 100%);
-  backdrop-filter: blur(22px) saturate(114%);
-  -webkit-backdrop-filter: blur(22px) saturate(114%);
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E"),
+    linear-gradient(158deg, rgba(255, 255, 255, 0.38) 0%, var(--surface-block-active) 100%);
+  backdrop-filter: blur(20px) saturate(116%);
+  -webkit-backdrop-filter: blur(20px) saturate(116%);
   border: 1.5px solid var(--accent-primary);
   box-shadow:
     0 10px 24px -12px rgba(45, 27, 38, 0.17),
-    inset 0 1px 1px rgba(255, 255, 255, 0.88),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8),
     inset 0 -1px 2px rgba(45, 27, 38, 0.05);
 }
 

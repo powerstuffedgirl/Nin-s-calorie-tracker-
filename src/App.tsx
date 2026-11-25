@@ -392,6 +392,7 @@ export default function App() {
             showComposer={showMealComposer}
             onToggleComposer={setShowMealComposer}
             aiInputRef={aiInputRef}
+            onOpenProfile={() => setActivePage('profile')}
           />
         )}
 
