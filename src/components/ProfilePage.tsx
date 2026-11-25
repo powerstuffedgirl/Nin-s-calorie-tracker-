@@ -14,6 +14,7 @@ interface ProfilePageProps {
   laurelDismissed: boolean;
   onSaveProfile: (updated: ProfileSettings) => void;
   onRestoreLaurel: () => void;
+  onClearDataToZero: () => void;
   onResetData: () => void;
 }
 
@@ -22,6 +23,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   laurelDismissed,
   onSaveProfile,
   onRestoreLaurel,
+  onClearDataToZero,
   onResetData,
 }) => {
   const [currentWeightKg, setCurrentWeightKg] = useState(String(profile.currentWeightKg));
@@ -31,7 +33,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [celebrationsEnabled, setCelebrationsEnabled] = useState(profile.celebrationsEnabled);
   const [error, setError] = useState<string | null>(null);
   const [savedNotice, setSavedNotice] = useState(false);
-  const [confirmReset, setConfirmReset] = useState(false);
+  const [pendingResetAction, setPendingResetAction] = useState<'zero' | 'sample' | null>(null);
+  const [resetNotice, setResetNotice] = useState<string | null>(null);
 
   const buildTimeKey = getBuildTimeGeminiApiKey();
   const [storedApiKey, setStoredApiKey] = useState(() => loadStoredGeminiApiKey());
@@ -420,48 +423,105 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </form>
           </section>
 
-          {/* Reset Sample Data */}
+          {/* Reset Tracker Data */}
           <section className="glass-panel rounded-3xl p-6">
             <h2 className="font-display text-base font-bold" style={{ color: 'var(--ink-primary)' }}>
               Reset Tracker Data
             </h2>
             <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--ink-secondary)' }}>
-              Restore Nin&apos;s default weekly sample history, targets, and Laurel&apos;s notes.
+              Erase all sample meals, water logs, and streak history to start fresh at 0—or restore the example week anytime. Your weight, daily targets, and API key stay saved.
             </p>
-            <div className="mt-4 flex items-center gap-2">
-              {!confirmReset ? (
-                <button
-                  type="button"
-                  onClick={() => setConfirmReset(true)}
-                  className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-black/12 bg-white/75 px-4 py-2 text-xs font-semibold transition-colors hover:bg-white cursor-pointer"
-                  style={{ color: 'var(--ink-primary)' }}
-                >
-                  <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-                  Reset sample data
-                </button>
-              ) : (
+
+            <div className="mt-4 flex flex-wrap items-center gap-2.5">
+              {pendingResetAction === null ? (
                 <>
                   <button
                     type="button"
-                    onClick={() => {
-                      onResetData();
-                      setConfirmReset(false);
-                    }}
-                    className="min-h-[40px] rounded-xl bg-red-700 px-4 py-2 text-xs font-semibold text-white hover:bg-red-800 cursor-pointer"
+                    onClick={() => setPendingResetAction('zero')}
+                    className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold text-white shadow-xs transition-opacity hover:opacity-95 cursor-pointer"
+                    style={{ backgroundColor: 'var(--accent-primary)' }}
                   >
-                    Confirm reset
+                    <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                    Set all data to 0
                   </button>
                   <button
                     type="button"
-                    onClick={() => setConfirmReset(false)}
-                    className="min-h-[40px] rounded-xl px-3 py-2 text-xs font-semibold hover:bg-black/5 cursor-pointer"
-                    style={{ color: 'var(--ink-secondary)' }}
+                    onClick={() => setPendingResetAction('sample')}
+                    className="glass-block inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold transition-colors hover:bg-white/80 cursor-pointer"
+                    style={{ color: 'var(--ink-primary)' }}
                   >
-                    Cancel
+                    <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+                    Restore sample data
                   </button>
                 </>
+              ) : pendingResetAction === 'zero' ? (
+                <div className="space-y-2.5 w-full">
+                  <p className="text-xs font-semibold" style={{ color: 'var(--ink-primary)' }}>
+                    Erase all meals, hydration logs, and streak history to 0?
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClearDataToZero();
+                        setPendingResetAction(null);
+                        setResetNotice('All meals, water logs, and streak cleared to 0 — ready for real tracking.');
+                        window.setTimeout(() => setResetNotice(null), 4000);
+                      }}
+                      className="min-h-[40px] rounded-xl bg-red-700 px-4 py-2 text-xs font-semibold text-white hover:bg-red-800 cursor-pointer"
+                    >
+                      Confirm set to 0
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPendingResetAction(null)}
+                      className="min-h-[40px] rounded-xl px-3 py-2 text-xs font-semibold hover:bg-black/5 cursor-pointer"
+                      style={{ color: 'var(--ink-secondary)' }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2.5 w-full">
+                  <p className="text-xs font-semibold" style={{ color: 'var(--ink-primary)' }}>
+                    Restore Nin&apos;s 7-day sample history and default targets?
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onResetData();
+                        setPendingResetAction(null);
+                        setResetNotice('Sample weekly history and default targets restored.');
+                        window.setTimeout(() => setResetNotice(null), 4000);
+                      }}
+                      className="min-h-[40px] rounded-xl bg-red-700 px-4 py-2 text-xs font-semibold text-white hover:bg-red-800 cursor-pointer"
+                    >
+                      Confirm restore
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPendingResetAction(null)}
+                      className="min-h-[40px] rounded-xl px-3 py-2 text-xs font-semibold hover:bg-black/5 cursor-pointer"
+                      style={{ color: 'var(--ink-secondary)' }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
+
+            {resetNotice && (
+              <p
+                role="status"
+                className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700"
+              >
+                <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                {resetNotice}
+              </p>
+            )}
           </section>
         </div>
       </div>

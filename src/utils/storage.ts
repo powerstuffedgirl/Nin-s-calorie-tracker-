@@ -1,5 +1,5 @@
 import { AppState } from '../types/tracker';
-import { createSeedState } from '../data/seedData';
+import { createEmptyTrackerState, createSeedState } from '../data/seedData';
 
 const STORAGE_KEY = 'nins-calorie-tracker-v1';
 
@@ -46,6 +46,12 @@ export function resetAppState(): AppState {
   const fresh = createSeedState();
   saveAppState(fresh);
   return fresh;
+}
+
+export function clearTrackerDataToZero(currentState: AppState): AppState {
+  const empty = createEmptyTrackerState(currentState);
+  saveAppState(empty);
+  return empty;
 }
 
 export const GEMINI_API_KEY_STORAGE_KEY = 'nins-calorie-tracker-gemini-api-key';

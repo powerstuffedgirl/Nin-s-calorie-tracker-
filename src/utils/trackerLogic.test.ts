@@ -21,6 +21,7 @@ import {
   resolveClientGeminiApiKey,
   shouldUseClientGemini,
 } from './nutritionClient';
+import { createEmptyTrackerState, createSeedState } from '../data/seedData';
 
 const sampleMeals: MealEntry[] = [
   {
@@ -218,6 +219,39 @@ test('shouldUseClientGemini routes github.io or explicit client keys to browser 
     shouldUseClientGemini({ hostname: 'localhost', envKey: '', storedKey: 'AIza-user-key' }),
     true
   );
+});
+
+test('createEmptyTrackerState clears all meals, water logs, streak, and weekly stats to 0 while keeping profile & theme', () => {
+  const seeded = createSeedState(new Date(2026, 4, 15));
+  const customized = {
+    ...seeded,
+    theme: 'copper' as const,
+    profile: { ...seeded.profile, currentWeightKg: 61.2, dailyCalorieTarget: 1700 },
+  };
+
+  const empty = createEmptyTrackerState(customized);
+  const todayKey = '2026-05-15';
+
+  assert.equal(empty.meals.length, 0);
+  assert.equal(empty.waterLogs.length, 0);
+  assert.equal(empty.celebratedMilestones.length, 0);
+  assert.equal(empty.theme, 'copper');
+  assert.equal(empty.profile.currentWeightKg, 61.2);
+  assert.equal(empty.profile.dailyCalorieTarget, 1700);
+
+  const totals = calculateDailyTotals(empty.meals, todayKey);
+  assert.equal(totals.calories, 0);
+  assert.equal(totals.protein, 0);
+  assert.equal(totals.carbs, 0);
+  assert.equal(totals.fat, 0);
+  assert.equal(calculateDailyWaterMl(empty.waterLogs, todayKey), 0);
+  assert.equal(calculateStreak(empty.meals, empty.waterLogs, todayKey), 0);
+
+  const weekly = calculateWeeklyOverview(empty.meals, empty.waterLogs, todayKey, 1700);
+  assert.equal(weekly.avgCalories, 0);
+  assert.equal(weekly.avgWaterMl, 0);
+  assert.equal(weekly.daysOnTrack, 0);
+  assert.equal(weekly.totalBegovaBowls, 0);
 });
 
 

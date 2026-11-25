@@ -15,7 +15,12 @@ import {
   formatLocalDateKey,
   LAUREL_NOTES,
 } from './data/seedData';
-import { loadAppState, resetAppState, saveAppState } from './utils/storage';
+import {
+  clearTrackerDataToZero,
+  loadAppState,
+  resetAppState,
+  saveAppState,
+} from './utils/storage';
 import {
   calculateDailyTotals,
   calculateDailyWaterMl,
@@ -35,6 +40,15 @@ import { HomePage } from './components/HomePage';
 import { WaterPage } from './components/WaterPage';
 import { StatsPage } from './components/StatsPage';
 import { ProfilePage } from './components/ProfilePage';
+import { PWAInstallButton } from './components/PWAInstallButton';
+import { OfflineIndicator } from './components/OfflineIndicator';
+
+const THEME_META_COLORS: Record<ThemeId, string> = {
+  unicorn: '#fff0f6',
+  thunder: '#fef9c3',
+  soup: '#ffe4e6',
+  copper: '#f6d5be',
+};
 
 function getCurrentTimeHHMM(): string {
   const now = new Date();
@@ -58,9 +72,13 @@ export default function App() {
   const [activeMilestone, setActiveMilestone] = useState<MilestoneEvent | null>(null);
   const aiInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Sync theme attribute to <html> and persist state
+  // Sync theme attribute & mobile browser theme-color to <html> and persist state
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', state.theme);
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', THEME_META_COLORS[state.theme]);
+    }
     saveAppState(state);
   }, [state]);
 
@@ -363,12 +381,15 @@ export default function App() {
 
       {/* Main Content Container */}
       <main className="relative z-10 mx-auto max-w-6xl px-4 pt-5 sm:px-6">
-        {/* Compact Icon-Only Theme Toggle Bar */}
-        <div className="mb-6 flex items-center justify-between gap-3">
+        {/* Compact Icon-Only Theme Toggle Bar + In-App PWA Install */}
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <ThemeSwitcher theme={state.theme} onChange={handleSetTheme} />
-          <p className="hidden sm:block text-xs font-medium" style={{ color: 'var(--ink-muted)' }}>
-            AI calorie tracker · Metric units
-          </p>
+          <div className="flex items-center gap-3">
+            <PWAInstallButton />
+            <p className="hidden sm:block text-xs font-medium" style={{ color: 'var(--ink-muted)' }}>
+              AI calorie tracker · Metric units
+            </p>
+          </div>
         </div>
 
         {activePage === 'home' && (
@@ -422,6 +443,11 @@ export default function App() {
             onRestoreLaurel={() =>
               setState((prev) => ({ ...prev, laurelDismissed: false, laurelMinimized: false }))
             }
+            onClearDataToZero={() => {
+              const empty = clearTrackerDataToZero(state);
+              setState(empty);
+              setSelectedDate(todayKey);
+            }}
             onResetData={() => {
               const fresh = resetAppState();
               setState(fresh);
@@ -447,6 +473,9 @@ export default function App() {
         }
         onDismiss={() => setState((prev) => ({ ...prev, laurelDismissed: true }))}
       />
+
+      {/* Subtle Offline Indicator (only shown when browser is offline) */}
+      <OfflineIndicator />
 
       {/* Mobile Bottom Tab Bar (Compact, <= 15% aggregate sticky height with header) */}
       <nav

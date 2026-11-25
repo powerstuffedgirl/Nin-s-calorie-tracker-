@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffd6e8" />
+      <stop offset="52%" stop-color="#fff4ee" />
+      <stop offset="100%" stop-color="#fef0b5" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#db2777" />
+      <stop offset="100%" stop-color="#9d2557" />
+    </linearGradient>
+    <linearGradient id="horn" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde68a" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+  </defs>
+
+  <!-- Full-bleed pastel gradient background -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)" />
+
+  <!-- Soft dreamy frosted circle -->
+  <circle cx="256" cy="256" r="196" fill="#ffffff" fill-opacity="0.55" stroke="#ffffff" stroke-opacity="0.9" stroke-width="6" />
+
+  <!-- Cute pastel unicorn motif -->
+  <g transform="translate(116, 98) scale(2.35)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Tail -->
+    <path d="M28 54 C14 50, 10 64, 18 72 C24 76, 30 68, 32 62" fill="#fbcfe8" stroke="#db2777" stroke-width="3.2" />
+    <!-- Mane -->
+    <path d="M72 30 C64 24, 58 34, 62 42" fill="#ddd6fe" stroke="#9333ea" stroke-width="3.2" />
+    <!-- Body -->
+    <path d="M32 54 C36 42, 62 42, 72 46 C78 36, 86 28, 96 32 C104 36, 102 46, 94 48 C88 50, 84 54, 82 62 C78 68, 42 68, 32 54 Z" fill="#fff8fb" stroke="#b8326a" stroke-width="3.4" />
+    <!-- Golden horn -->
+    <path d="M93 30 L108 14 L98 34 Z" fill="url(#horn)" stroke="#d97706" stroke-width="2.6" />
+    <!-- Legs -->
+    <path d="M42 66 L34 82" stroke="#b8326a" stroke-width="3.4" />
+    <path d="M53 67 L57 83" stroke="#b8326a" stroke-width="3.4" />
+    <path d="M72 65 L81 81" stroke="#b8326a" stroke-width="3.4" />
+    <path d="M80 61 L93 73" stroke="#b8326a" stroke-width="3.4" />
+    <!-- Eye & rosy cheek -->
+    <circle cx="91" cy="39" r="2.2" fill="#2d1b26" />
+    <circle cx="95" cy="43.5" r="3.2" fill="#f9a8d4" opacity="0.85" />
+  </g>
+
+  <!-- Sparkles -->
+  <path d="M126 120 L134 142 L156 150 L134 158 L126 180 L118 158 L96 150 L118 142 Z" fill="#f59e0b" />
+  <path d="M394 114 L400 130 L416 136 L400 142 L394 158 L388 142 L372 136 L388 130 Z" fill="#db2777" />
+  <path d="M120 356 L125 368 L137 373 L125 378 L120 390 L115 378 L103 373 L115 368 Z" fill="#a855f7" />
+
+  <!-- Crisp "Nin" wordmark -->
+  <text
+    x="256"
+    y="394"
+    text-anchor="middle"
+    font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+    font-size="94"
+    font-weight="800"
+    letter-spacing="-2"
+    fill="url(#accent)"
+  >Nin</text>
+</svg>

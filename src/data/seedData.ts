@@ -422,3 +422,21 @@ export function createSeedState(baseDate: Date = new Date()): AppState {
     celebratedMilestones: [],
   };
 }
+
+export function createEmptyTrackerState(
+  currentState?: Pick<
+    AppState,
+    'theme' | 'profile' | 'laurelDismissed' | 'laurelMinimized' | 'laurelNoteIndex'
+  >
+): AppState {
+  return {
+    theme: currentState?.theme ?? 'unicorn',
+    meals: [],
+    waterLogs: [],
+    profile: currentState?.profile ? { ...currentState.profile } : { ...DEFAULT_PROFILE },
+    laurelDismissed: currentState?.laurelDismissed ?? false,
+    laurelMinimized: currentState?.laurelMinimized ?? false,
+    laurelNoteIndex: currentState?.laurelNoteIndex ?? 0,
+    celebratedMilestones: [],
+  };
+}
