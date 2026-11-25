@@ -311,7 +311,7 @@ export default function App() {
       />
 
       {/* Strict 3-Zone Sleek Top Bar */}
-      <header className="sticky top-0 z-30 border-b border-black/6 bg-white/36 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-black/6 bg-white/50 backdrop-blur-2xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-8 px-4 sm:px-6">
           {/* Zone 1: Brand with running/orbiting unicorn around "Nin" */}
           <OrbitingUnicornBrand onClick={() => setActivePage('home')} />
