@@ -1,0 +1,6 @@
+{
+  "name": "Nin's Calorie Tracker",
+  "description": "A pastel crayon-doodle calorie, macro, and hydration tracker crafted for Nin, featuring Begova čorba quick-add, three illustrated themes, streak tracking, and encouraging notes from Laurel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
