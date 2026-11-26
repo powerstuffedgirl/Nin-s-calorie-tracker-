@@ -12,6 +12,7 @@ import {
   formatWaterLiters,
   normalizeAiMealItems,
   scaleMealMacros,
+  summarizeWeeklyHydration,
   validateMealForm,
   validateProfileForm,
 } from './trackerLogic';
@@ -252,6 +253,22 @@ test('createEmptyTrackerState clears all meals, water logs, streak, and weekly s
   assert.equal(weekly.avgWaterMl, 0);
   assert.equal(weekly.daysOnTrack, 0);
   assert.equal(weekly.totalBegovaBowls, 0);
+});
+
+test('summarizeWeeklyHydration computes goal-met days, averages, and Y-axis ceiling accurately', () => {
+  const overview = calculateWeeklyOverview(sampleMeals, sampleWater, '2026-11-25', 1850);
+  const summary = summarizeWeeklyHydration(overview.days, 2000);
+  assert.equal(summary.loggedDaysCount, 2);
+  assert.equal(summary.goalMetDays, 1);
+  assert.equal(summary.avgWaterMl, 1625);
+  assert.equal(summary.avgDeltaMl, -375);
+  assert.equal(summary.yAxisMaxMl, 2500);
+
+  const emptySummary = summarizeWeeklyHydration([], 2200);
+  assert.equal(emptySummary.loggedDaysCount, 0);
+  assert.equal(emptySummary.goalMetDays, 0);
+  assert.equal(emptySummary.avgWaterMl, 0);
+  assert.equal(emptySummary.yAxisMaxMl, 3000);
 });
 
 

@@ -48,6 +48,7 @@ const THEME_META_COLORS: Record<ThemeId, string> = {
   thunder: '#fef9c3',
   soup: '#ffe4e6',
   copper: '#f6d5be',
+  dark: '#0d101d',
 };
 
 function getCurrentTimeHHMM(): string {
@@ -72,9 +73,10 @@ export default function App() {
   const [activeMilestone, setActiveMilestone] = useState<MilestoneEvent | null>(null);
   const aiInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Sync theme attribute & mobile browser theme-color to <html> and persist state
+  // Sync theme attribute, dark class & mobile browser theme-color to <html> and persist state
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', state.theme);
+    document.documentElement.classList.toggle('dark', state.theme === 'dark');
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
       metaThemeColor.setAttribute('content', THEME_META_COLORS[state.theme]);
@@ -329,7 +331,13 @@ export default function App() {
       />
 
       {/* Strict 3-Zone Sleek Top Bar */}
-      <header className="sticky top-0 z-30 border-b border-black/6 bg-white/50 backdrop-blur-2xl">
+      <header
+        className="sticky top-0 z-30 border-b backdrop-blur-2xl"
+        style={{
+          backgroundColor: 'var(--header-bg)',
+          borderColor: 'var(--divider-hairline)',
+        }}
+      >
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-8 px-4 sm:px-6">
           {/* Zone 1: Brand with running/orbiting unicorn around "Nin" */}
           <OrbitingUnicornBrand onClick={() => setActivePage('home')} />
@@ -370,8 +378,7 @@ export default function App() {
           <button
             type="button"
             onClick={handleTopBarLogMeal}
-            className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-95 whitespace-nowrap shrink-0 cursor-pointer"
-            style={{ backgroundColor: 'var(--accent-primary)' }}
+            className="btn-theme-gradient inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold text-white whitespace-nowrap shrink-0 cursor-pointer"
           >
             <Plus className="h-3.5 w-3.5" aria-hidden="true" />
             Log Meal
@@ -480,7 +487,11 @@ export default function App() {
       {/* Mobile Bottom Tab Bar (Compact, <= 15% aggregate sticky height with header) */}
       <nav
         aria-label="Mobile navigation"
-        className="fixed right-0 bottom-0 left-0 z-30 grid h-16 grid-cols-4 items-center border-t border-black/8 bg-white/85 backdrop-blur-xl md:hidden"
+        className="fixed right-0 bottom-0 left-0 z-30 grid h-16 grid-cols-4 items-center border-t backdrop-blur-xl md:hidden"
+        style={{
+          backgroundColor: 'var(--mobile-nav-bg)',
+          borderColor: 'var(--divider-hairline)',
+        }}
       >
         {NAV_ITEMS.map((item) => {
           const active = activePage === item.id;

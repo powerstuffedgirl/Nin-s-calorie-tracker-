@@ -43,10 +43,11 @@ export const OrbitingUnicornBrand: React.FC<OrbitingUnicornBrandProps> = ({
 
       {/* Brand Wordmark */}
       <span
-        className={`font-display relative z-10 font-bold tracking-tight transition-transform duration-200 group-hover:scale-105 ${
+        data-testid="nin-brand-title"
+        className={`font-display relative z-10 font-bold tracking-tight transition-all duration-200 group-hover:scale-105 ${
           isHero ? 'text-4xl' : 'text-2xl'
         }`}
-        style={{ color: 'var(--ink-primary)' }}
+        style={{ color: 'var(--brand-title)' }}
       >
         Nin
       </span>

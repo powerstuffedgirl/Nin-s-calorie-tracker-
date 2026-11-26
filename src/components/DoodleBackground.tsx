@@ -330,6 +330,48 @@ function CrayonWinterCapSvg({ className }: { className?: string }) {
   );
 }
 
+function CrayonCrescentMoonSvg({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 110 110" fill="none" className={className} aria-hidden="true">
+      <g filter="url(#crayon-texture)" strokeLinecap="round" strokeLinejoin="round">
+        <path
+          d="M68 18 C44 22, 28 42, 32 66 C36 88, 58 98, 82 90 C62 88, 50 74, 50 56 C50 38, 58 26, 68 18 Z"
+          fill="#fde68a"
+          fillOpacity="0.34"
+          stroke="#fde68a"
+          strokeWidth="2.6"
+        />
+        <path
+          d="M78 30 L81 36 L87 39 L81 42 L78 48 L75 42 L69 39 L75 36 Z"
+          fill="#f9a8d4"
+          fillOpacity="0.5"
+          stroke="#f9a8d4"
+          strokeWidth="1.6"
+        />
+        <circle cx="88" cy="60" r="2.2" fill="#c4b5fd" />
+      </g>
+    </svg>
+  );
+}
+
+function CrayonNightCloudSvg({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 140 90" fill="none" className={className} aria-hidden="true">
+      <g filter="url(#crayon-texture)" strokeLinecap="round" strokeLinejoin="round">
+        <path
+          d="M28 62 C16 62, 12 48, 22 42 C22 28, 38 20, 52 28 C60 16, 82 16, 92 28 C106 26, 118 38, 114 52 C112 58, 104 62, 94 62 Z"
+          fill="#818cf8"
+          fillOpacity="0.16"
+          stroke="#c4b5fd"
+          strokeWidth="2.3"
+        />
+        <path d="M40 72 L42 76 L46 78 L42 80 L40 84 L38 80 L34 78 L38 76 Z" fill="#fde68a" opacity="0.8" />
+        <path d="M96 68 L98 71 L101 73 L98 75 L96 78 L94 75 L91 73 L94 71 Z" fill="#f9a8d4" opacity="0.8" />
+      </g>
+    </svg>
+  );
+}
+
 export const DoodleBackground: React.FC<DoodleBackgroundProps> = ({ theme }) => {
   return (
     <div
@@ -423,6 +465,20 @@ export const DoodleBackground: React.FC<DoodleBackgroundProps> = ({ theme }) => 
           <CrayonKnittedSockSvg className="animate-doodle-b absolute top-[14%] left-[56%] hidden w-16 opacity-34 lg:block" />
           <CrayonSparkleSvg className="animate-doodle-twinkle absolute bottom-[34%] left-[3.2%] hidden w-9 opacity-50 lg:block" color="#9a3412" />
           <CrayonSparkleSvg className="animate-doodle-twinkle absolute top-[24%] right-[16%] hidden w-9 opacity-48 lg:block" color="#b45309" />
+        </>
+      )}
+
+      {theme === 'dark' && (
+        <>
+          <CrayonCrescentMoonSvg className="animate-doodle-a absolute top-28 left-[1.8%] hidden w-28 opacity-55 xl:block xl:w-32" />
+          <CrayonNightCloudSvg className="animate-doodle-b absolute top-24 right-[2%] w-24 opacity-45 md:w-34 md:opacity-55" />
+          <CrayonSparkleSvg className="animate-doodle-twinkle absolute top-[46%] left-[2%] w-10 opacity-65" color="#fde68a" />
+          <CrayonNightCloudSvg className="animate-doodle-a absolute bottom-20 left-[2%] w-32 opacity-45" />
+          <CrayonCrescentMoonSvg className="animate-doodle-b absolute bottom-16 right-[2%] w-24 opacity-50 -scale-x-100" />
+          <CrayonSparkleSvg className="animate-doodle-twinkle absolute top-[58%] right-[2.8%] w-11 opacity-65" color="#f472b6" />
+          <CrayonSparkleSvg className="animate-doodle-twinkle absolute top-[16%] left-[55%] hidden w-9 opacity-50 lg:block" color="#c4b5fd" />
+          <CrayonSparkleSvg className="animate-doodle-twinkle absolute bottom-[35%] left-[3%] hidden w-8 opacity-55 lg:block" color="#38bdf8" />
+          <CrayonSparkleSvg className="animate-doodle-twinkle absolute top-[24%] right-[17%] hidden w-9 opacity-55 lg:block" color="#fde68a" />
         </>
       )}
     </div>

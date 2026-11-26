@@ -16,7 +16,8 @@ export function loadAppState(): AppState {
         parsed.theme === 'unicorn' ||
         parsed.theme === 'thunder' ||
         parsed.theme === 'soup' ||
-        parsed.theme === 'copper'
+        parsed.theme === 'copper' ||
+        parsed.theme === 'dark'
           ? parsed.theme
           : fallback.theme,
       meals: Array.isArray(parsed.meals) ? parsed.meals : fallback.meals,

@@ -150,14 +150,13 @@ export const AiMealLogger: React.FC<AiMealLoggerProps> = ({
             }}
             disabled={loading}
             placeholder="e.g., 2 slices burek sa mesom + 200ml kefir, or 1 bowl pad thai..."
-            className="min-h-[44px] flex-1 bg-transparent px-3 py-2 text-sm outline-none placeholder:text-black/40 disabled:opacity-60"
+            className="min-h-[44px] flex-1 bg-transparent px-3 py-2 text-sm outline-none placeholder:text-black/40 dark:placeholder:text-white/40 disabled:opacity-60"
             style={{ color: 'var(--ink-primary)' }}
           />
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-95 active:scale-[0.98] disabled:opacity-70 whitespace-nowrap shrink-0 cursor-pointer"
-            style={{ backgroundColor: 'var(--accent-primary)' }}
+            className="btn-theme-gradient inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-70 whitespace-nowrap shrink-0 cursor-pointer"
           >
             {loading ? (
               <>
@@ -187,7 +186,7 @@ export const AiMealLogger: React.FC<AiMealLoggerProps> = ({
                 setQuery(sample);
                 void runEstimate(sample);
               }}
-              className="glass-block rounded-xl px-2.5 py-1.5 text-[11px] font-medium transition-colors hover:bg-white/75 disabled:opacity-50 cursor-pointer"
+              className="glass-block rounded-xl px-2.5 py-1.5 text-[11px] font-medium transition-colors hover:bg-white/75 dark:hover:bg-white/10 disabled:opacity-50 cursor-pointer"
               style={{ color: 'var(--ink-secondary)' }}
             >
               {sample}
@@ -199,7 +198,7 @@ export const AiMealLogger: React.FC<AiMealLoggerProps> = ({
           <div
             role="alert"
             data-testid="ai-estimate-error"
-            className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-red-50/85 px-3.5 py-2.5 text-xs font-semibold text-red-800 border border-red-200"
+            className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-red-50/85 dark:bg-red-950/60 px-3.5 py-2.5 text-xs font-semibold text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800/60"
           >
             <span>{error}</span>
             {onOpenProfile && (errorCode === 'MISSING_KEY' || errorCode === 'AUTH_ERROR') && (
@@ -236,7 +235,7 @@ export const AiMealLogger: React.FC<AiMealLoggerProps> = ({
             <button
               type="button"
               onClick={handleUndo}
-              className="inline-flex min-h-[36px] items-center gap-1.5 rounded-xl bg-white/70 px-3 py-1.5 text-xs font-semibold border border-black/10 hover:bg-white transition-colors cursor-pointer whitespace-nowrap"
+              className="glass-block inline-flex min-h-[36px] items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold hover:bg-white/80 dark:hover:bg-white/10 transition-colors cursor-pointer whitespace-nowrap"
               style={{ color: 'var(--ink-primary)' }}
             >
               <Undo2 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -244,7 +243,10 @@ export const AiMealLogger: React.FC<AiMealLoggerProps> = ({
             </button>
           </div>
 
-          <ul className="mt-3 divide-y divide-black/6 border-t border-black/6 pt-2">
+          <ul
+            className="mt-3 divide-y divide-black/6 dark:divide-white/10 border-t pt-2"
+            style={{ borderColor: 'var(--divider-hairline)' }}
+          >
             {lastBatch.items.map((item, idx) => (
               <li
                 key={`${item.name}-${idx}`}

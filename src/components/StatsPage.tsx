@@ -16,6 +16,7 @@ import {
   calculateMacroCalorieSplit,
   formatWaterLiters,
   MEAL_TYPES,
+  summarizeWeeklyHydration,
 } from '../utils/trackerLogic';
 
 interface StatsPageProps {
@@ -33,6 +34,18 @@ interface WeeklyTrendDatum extends WeeklyDayStat {
 interface CustomTooltipProps {
   active?: boolean;
   payload?: Array<{ payload?: WeeklyTrendDatum }>;
+}
+
+interface WeeklyHydrationDatum extends WeeklyDayStat {
+  index: number;
+  waterGoalMl: number;
+  waterDeltaMl: number;
+  waterGoalPct: number;
+}
+
+interface CustomHydrationTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload?: WeeklyHydrationDatum }>;
 }
 
 const WeeklyTrendsTooltip: React.FC<CustomTooltipProps> = ({ active, payload }) => {
@@ -67,13 +80,50 @@ const WeeklyTrendsTooltip: React.FC<CustomTooltipProps> = ({ active, payload }) 
         {deltaLabel}
       </p>
       <div
-        className="font-tabular mt-1.5 flex items-center gap-3 border-t border-black/6 pt-1.5 text-[11px]"
-        style={{ color: 'var(--ink-muted)' }}
+        className="font-tabular mt-1.5 flex items-center gap-3 border-t pt-1.5 text-[11px]"
+        style={{ color: 'var(--ink-muted)', borderColor: 'var(--divider-hairline)' }}
       >
         <span>
           {datum.protein}g P · {datum.carbs}g C · {datum.fat}g F
         </span>
-        <span className="text-sky-800">{formatWaterLiters(datum.waterMl)}</span>
+        <span style={{ color: 'var(--water-ink)' }}>{formatWaterLiters(datum.waterMl)}</span>
+      </div>
+    </div>
+  );
+};
+
+const WeeklyHydrationTooltip: React.FC<CustomHydrationTooltipProps> = ({ active, payload }) => {
+  if (!active || !payload || payload.length === 0) return null;
+  const datum = payload[0]?.payload;
+  if (!datum) return null;
+
+  const delta = datum.waterDeltaMl;
+  const deltaLabel =
+    datum.waterMl === 0
+      ? 'No water logged'
+      : delta >= 0
+      ? `+${delta.toLocaleString('en-US')} ml above goal (${datum.waterGoalPct}%)`
+      : `${Math.abs(delta).toLocaleString('en-US')} ml under goal (${datum.waterGoalPct}%)`;
+
+  return (
+    <div className="glass-panel-strong rounded-2xl px-3.5 py-2.5 text-xs shadow-lg">
+      <div className="flex items-center justify-between gap-4">
+        <span className="font-display font-bold" style={{ color: 'var(--ink-primary)' }}>
+          {datum.dayShort}, {datum.date.slice(5)}
+        </span>
+        <span className="font-tabular font-semibold" style={{ color: 'var(--water-ink)' }}>
+          {datum.waterMl.toLocaleString('en-US')} ml
+        </span>
+      </div>
+      <p className="mt-1 text-[11px] font-medium" style={{ color: 'var(--ink-secondary)' }}>
+        {deltaLabel}
+      </p>
+      <div
+        className="font-tabular mt-1.5 flex items-center justify-between gap-3 border-t pt-1.5 text-[11px]"
+        style={{ color: 'var(--ink-muted)', borderColor: 'var(--divider-hairline)' }}
+      >
+        <span>{formatWaterLiters(datum.waterMl)} logged</span>
+        <span>Goal {datum.waterGoalMl.toLocaleString('en-US')} ml</span>
       </div>
     </div>
   );
@@ -120,6 +170,26 @@ export const StatsPage: React.FC<StatsPageProps> = ({
     return Math.ceil(peak / 250) * 250;
   }, [profile.dailyCalorieTarget, weeklyOverview.days]);
 
+  const hydrationSummary = useMemo(
+    () => summarizeWeeklyHydration(weeklyOverview.days, profile.dailyWaterTargetMl),
+    [weeklyOverview.days, profile.dailyWaterTargetMl]
+  );
+
+  const hydrationChartData: WeeklyHydrationDatum[] = useMemo(
+    () =>
+      weeklyOverview.days.map((day, index) => ({
+        ...day,
+        index,
+        waterGoalMl: profile.dailyWaterTargetMl,
+        waterDeltaMl: day.waterMl - profile.dailyWaterTargetMl,
+        waterGoalPct:
+          profile.dailyWaterTargetMl > 0
+            ? Math.round((day.waterMl / profile.dailyWaterTargetMl) * 100)
+            : 0,
+      })),
+    [weeklyOverview.days, profile.dailyWaterTargetMl]
+  );
+
   const loggedDays = weeklyOverview.days.filter((d) => d.calories > 0);
   const avgDelta = weeklyOverview.avgCalories - profile.dailyCalorieTarget;
   const patternSummary =
@@ -130,6 +200,13 @@ export const StatsPage: React.FC<StatsPageProps> = ({
       : avgDelta < 0
       ? `Your 7-day average is ${Math.abs(avgDelta).toLocaleString('en-US')} kcal under your daily goal across ${loggedDays.length} logged day${loggedDays.length === 1 ? '' : 's'}.`
       : `Your 7-day average is ${avgDelta.toLocaleString('en-US')} kcal above your daily goal across ${loggedDays.length} logged day${loggedDays.length === 1 ? '' : 's'}.`;
+
+  const hydrationPatternSummary =
+    hydrationSummary.loggedDaysCount === 0
+      ? 'Log water in the Water tab to track your 7-day daily intake (ml) against your hydration goal.'
+      : hydrationSummary.goalMetDays > 0
+      ? `Hit your ${profile.dailyWaterTargetMl.toLocaleString('en-US')} ml daily goal on ${hydrationSummary.goalMetDays} of the last 7 days · avg ${hydrationSummary.avgWaterMl.toLocaleString('en-US')} ml/day.`
+      : `Averaging ${hydrationSummary.avgWaterMl.toLocaleString('en-US')} ml/day across ${hydrationSummary.loggedDaysCount} logged day${hydrationSummary.loggedDaysCount === 1 ? '' : 's'} (${Math.abs(hydrationSummary.avgDeltaMl).toLocaleString('en-US')} ml shy of your daily goal).`;
 
   return (
     <div className="space-y-6">
@@ -148,7 +225,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({
       {/* 4-Column Weekly KPI Strip (Clean hairline dividers, single elevation) */}
       <section
         aria-label="Weekly summary highlights"
-        className="glass-panel grid grid-cols-2 divide-y divide-black/6 rounded-3xl sm:grid-cols-4 sm:divide-x sm:divide-y-0"
+        className="glass-panel grid grid-cols-2 divide-y divide-black/6 dark:divide-white/10 rounded-3xl sm:grid-cols-4 sm:divide-x sm:divide-y-0"
       >
         <div className="p-5">
           <p className="text-xs font-medium" style={{ color: 'var(--ink-muted)' }}>
@@ -166,7 +243,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({
           <p className="text-xs font-medium" style={{ color: 'var(--ink-muted)' }}>
             7-Day Avg Water
           </p>
-          <p className="font-tabular mt-1.5 text-2xl font-semibold text-sky-800">
+          <p className="font-tabular mt-1.5 text-2xl font-semibold" style={{ color: 'var(--water-ink)' }}>
             {formatWaterLiters(weeklyOverview.avgWaterMl)}
           </p>
         </div>
@@ -214,7 +291,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({
                   cy="75"
                   r={donutRadius}
                   fill="none"
-                  stroke="rgba(0,0,0,0.06)"
+                  stroke="var(--track-bg)"
                   strokeWidth="16"
                 />
                 {pLen > 0 && (
@@ -308,7 +385,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({
           </div>
 
           {/* Calories by Meal Type */}
-          <div className="border-t border-black/6 pt-5">
+          <div className="border-t pt-5" style={{ borderColor: 'var(--divider-hairline)' }}>
             <h3 className="text-xs font-semibold" style={{ color: 'var(--ink-secondary)' }}>
               Today by Meal Type
             </h3>
@@ -329,7 +406,10 @@ export const StatsPage: React.FC<StatsPageProps> = ({
                         {kcal} kcal ({share}%)
                       </span>
                     </div>
-                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/6">
+                    <div
+                      className="h-1.5 w-full overflow-hidden rounded-full"
+                      style={{ backgroundColor: 'var(--track-bg)' }}
+                    >
                       <div
                         className="h-full rounded-full transition-all duration-300"
                         style={{
@@ -345,11 +425,13 @@ export const StatsPage: React.FC<StatsPageProps> = ({
           </div>
         </section>
 
-        {/* Weekly 7-Day Interactive Trends Chart (Recharts) */}
-        <section
-          aria-label="Weekly calorie trends chart"
-          className="glass-panel rounded-3xl p-6 lg:col-span-7"
-        >
+        {/* Right Column: Weekly Calorie Trends + Weekly Hydration Trend stacked */}
+        <div className="space-y-6 lg:col-span-7">
+          {/* Weekly 7-Day Interactive Calorie Trends Chart (Recharts) */}
+          <section
+            aria-label="Weekly calorie trends chart"
+            className="glass-panel rounded-3xl p-6"
+          >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="font-display text-lg font-bold" style={{ color: 'var(--ink-primary)' }}>
@@ -402,13 +484,13 @@ export const StatsPage: React.FC<StatsPageProps> = ({
                   </linearGradient>
                 </defs>
                 <CartesianGrid
-                  stroke="rgba(45, 27, 38, 0.08)"
+                  stroke="var(--chart-grid)"
                   strokeDasharray="3 4"
                   vertical={false}
                 />
                 <XAxis
                   dataKey="dayShort"
-                  axisLine={{ stroke: 'rgba(45, 27, 38, 0.1)' }}
+                  axisLine={{ stroke: 'var(--chart-axis)' }}
                   tickLine={false}
                   tick={{
                     fill: 'var(--ink-secondary)',
@@ -433,7 +515,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({
                 />
                 <Tooltip
                   content={<WeeklyTrendsTooltip />}
-                  cursor={{ fill: 'rgba(255, 255, 255, 0.25)' }}
+                  cursor={{ fill: 'var(--chart-cursor)' }}
                 />
                 <ReferenceLine
                   y={profile.dailyCalorieTarget}
@@ -495,7 +577,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({
                         cx={cx}
                         cy={cy}
                         r={isSelected ? 5 : 3.5}
-                        fill={isSelected ? 'var(--accent-primary)' : '#ffffff'}
+                        fill={isSelected ? 'var(--accent-primary)' : 'var(--chart-dot-bg)'}
                         stroke="var(--accent-primary)"
                         strokeWidth={2}
                         className="cursor-pointer"
@@ -506,7 +588,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({
                   activeDot={{
                     r: 6,
                     fill: 'var(--accent-primary)',
-                    stroke: '#ffffff',
+                    stroke: 'var(--chart-dot-bg)',
                     strokeWidth: 2,
                   }}
                 />
@@ -547,7 +629,10 @@ export const StatsPage: React.FC<StatsPageProps> = ({
 
           {/* Selected Day Detail Readout */}
           {selectedDay && (
-            <div className="mt-5 grid grid-cols-2 gap-4 border-t border-black/6 pt-5 sm:grid-cols-4">
+            <div
+              className="mt-5 grid grid-cols-2 gap-4 border-t pt-5 sm:grid-cols-4"
+              style={{ borderColor: 'var(--divider-hairline)' }}
+            >
               <div>
                 <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>
                   Selected Day
@@ -583,13 +668,243 @@ export const StatsPage: React.FC<StatsPageProps> = ({
                 <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>
                   Hydration
                 </p>
-                <p className="font-tabular mt-0.5 text-base font-semibold text-sky-800">
+                <p className="font-tabular mt-0.5 text-base font-semibold" style={{ color: 'var(--water-ink)' }}>
                   {formatWaterLiters(selectedDay.waterMl)}
                 </p>
               </div>
             </div>
           )}
         </section>
+
+          {/* Weekly 7-Day Interactive Hydration Trend Chart (Recharts) */}
+          <section
+            aria-label="Weekly hydration trend chart"
+            className="glass-panel rounded-3xl p-6"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="font-display text-lg font-bold" style={{ color: 'var(--ink-primary)' }}>
+                  Weekly Hydration Trend
+                </h2>
+                <p className="mt-0.5 text-xs leading-relaxed" style={{ color: 'var(--ink-muted)' }}>
+                  {hydrationPatternSummary}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 text-[11px] font-medium" style={{ color: 'var(--ink-secondary)' }}>
+                <span className="inline-flex items-center gap-1.5">
+                  <span
+                    className="h-2.5 w-2.5 rounded-xs"
+                    style={{ backgroundColor: 'var(--water-fill)' }}
+                    aria-hidden="true"
+                  />
+                  Water intake (ml)
+                </span>
+                <span className="inline-flex items-center gap-1.5 font-tabular">
+                  <span
+                    className="inline-block w-4 border-t-2 border-dashed"
+                    style={{ borderColor: 'var(--water-fill)' }}
+                    aria-hidden="true"
+                  />
+                  Goal {profile.dailyWaterTargetMl.toLocaleString('en-US')} ml
+                </span>
+              </div>
+            </div>
+
+            {/* Recharts Weekly Hydration Composed Chart */}
+            <div
+              className="mt-5 h-60 w-full"
+              role="img"
+              aria-label="7-day daily water intake in milliliters compared against daily hydration goal"
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart
+                  data={hydrationChartData}
+                  margin={{ top: 18, right: 12, left: 2, bottom: 4 }}
+                  onClick={(state) => {
+                    const idx =
+                      typeof state?.activeTooltipIndex === 'number'
+                        ? state.activeTooltipIndex
+                        : Number(state?.activeTooltipIndex);
+                    if (!Number.isNaN(idx) && idx >= 0 && idx < hydrationChartData.length) {
+                      setSelectedDayIndex(idx);
+                    }
+                  }}
+                >
+                  <defs>
+                    <linearGradient id="weeklyHydrationTrendFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--water-fill)" stopOpacity={0.28} />
+                      <stop offset="95%" stopColor="var(--water-fill)" stopOpacity={0.03} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    stroke="var(--chart-grid)"
+                    strokeDasharray="3 4"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="dayShort"
+                    axisLine={{ stroke: 'var(--chart-axis)' }}
+                    tickLine={false}
+                    tick={{
+                      fill: 'var(--ink-secondary)',
+                      fontSize: 12,
+                      fontWeight: 600,
+                    }}
+                    dy={6}
+                  />
+                  <YAxis
+                    domain={[0, hydrationSummary.yAxisMaxMl]}
+                    axisLine={false}
+                    tickLine={false}
+                    width={54}
+                    tick={{
+                      fill: 'var(--ink-muted)',
+                      fontSize: 11,
+                      fontFamily: 'var(--font-mono)',
+                    }}
+                    tickFormatter={(value: number) => `${value.toLocaleString('en-US')}`}
+                  />
+                  <Tooltip
+                    content={<WeeklyHydrationTooltip />}
+                    cursor={{ fill: 'var(--chart-cursor)' }}
+                  />
+                  <ReferenceLine
+                    y={profile.dailyWaterTargetMl}
+                    stroke="var(--water-fill)"
+                    strokeWidth={1.75}
+                    strokeDasharray="6 4"
+                    label={{
+                      value: `Goal ${profile.dailyWaterTargetMl.toLocaleString('en-US')} ml`,
+                      position: 'insideTopRight',
+                      fill: 'var(--water-ink)',
+                      fontSize: 11,
+                      fontWeight: 600,
+                    }}
+                  />
+                  <Bar
+                    dataKey="waterMl"
+                    barSize={26}
+                    radius={[8, 8, 2, 2]}
+                    isAnimationActive={false}
+                    onClick={(_data, idx) => {
+                      if (typeof idx === 'number') setSelectedDayIndex(idx);
+                    }}
+                  >
+                    {hydrationChartData.map((entry, idx) => {
+                      const isSelected = idx === selectedDayIndex;
+                      const metGoal = entry.waterMl >= profile.dailyWaterTargetMl;
+                      const fill = isSelected
+                        ? 'var(--water-fill)'
+                        : metGoal
+                        ? 'rgba(14, 165, 233, 0.42)'
+                        : 'var(--water-soft)';
+                      return (
+                        <Cell
+                          key={`water-bar-${entry.date}`}
+                          fill={fill}
+                          stroke={isSelected ? 'var(--water-fill)' : 'var(--border-glass)'}
+                          strokeWidth={1}
+                          className="cursor-pointer"
+                        />
+                      );
+                    })}
+                  </Bar>
+                  <Area
+                    type="monotone"
+                    dataKey="waterMl"
+                    stroke="var(--water-fill)"
+                    strokeWidth={2.25}
+                    fill="url(#weeklyHydrationTrendFill)"
+                    isAnimationActive={false}
+                    dot={(dotProps) => {
+                      const { cx, cy, index } = dotProps;
+                      if (typeof cx !== 'number' || typeof cy !== 'number' || typeof index !== 'number') {
+                        return <g key={`water-empty-${String(index)}`} />;
+                      }
+                      const isSelected = index === selectedDayIndex;
+                      return (
+                        <circle
+                          key={`water-dot-${hydrationChartData[index]?.date ?? index}`}
+                          cx={cx}
+                          cy={cy}
+                          r={isSelected ? 5 : 3.5}
+                          fill={isSelected ? 'var(--water-fill)' : 'var(--chart-dot-bg)'}
+                          stroke="var(--water-fill)"
+                          strokeWidth={2}
+                          className="cursor-pointer"
+                          onClick={() => setSelectedDayIndex(index)}
+                        />
+                      );
+                    }}
+                    activeDot={{
+                      r: 6,
+                      fill: 'var(--water-fill)',
+                      stroke: 'var(--chart-dot-bg)',
+                      strokeWidth: 2,
+                    }}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Hydration Day Selector Chips (ml readout) */}
+            <div
+              className="mt-3 grid grid-cols-7 gap-1.5"
+              role="group"
+              aria-label="Select a day to inspect hydration"
+            >
+              {hydrationChartData.map((day, idx) => {
+                const selected = idx === selectedDayIndex;
+                return (
+                  <button
+                    key={`water-day-select-${day.date}`}
+                    type="button"
+                    onClick={() => setSelectedDayIndex(idx)}
+                    aria-pressed={selected}
+                    className={`${
+                      selected ? 'glass-block-active' : 'glass-block'
+                    } rounded-xl px-1 py-1.5 text-center transition-all cursor-pointer`}
+                  >
+                    <span
+                      className="block text-[11px] font-semibold"
+                      style={{ color: selected ? 'var(--water-ink)' : 'var(--ink-secondary)' }}
+                    >
+                      {day.dayShort}
+                    </span>
+                    <span
+                      className="font-tabular block text-[10px]"
+                      style={{ color: selected ? 'var(--ink-primary)' : 'var(--ink-muted)' }}
+                    >
+                      {day.waterMl > 0 ? `${day.waterMl}` : '0'}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Selected Day Hydration Summary Row */}
+            {selectedDay && (
+              <div
+                className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-4 text-xs"
+                style={{ borderColor: 'var(--divider-hairline)' }}
+              >
+                <div className="flex items-center gap-2">
+                  <span style={{ color: 'var(--ink-muted)' }}>
+                    {selectedDay.dayShort}, {selectedDay.date.slice(5)}:
+                  </span>
+                  <span className="font-tabular font-semibold" style={{ color: 'var(--water-ink)' }}>
+                    {selectedDay.waterMl.toLocaleString('en-US')} ml ({formatWaterLiters(selectedDay.waterMl)})
+                  </span>
+                </div>
+                <span className="font-tabular font-medium" style={{ color: 'var(--ink-secondary)' }}>
+                  {selectedDay.waterMl >= profile.dailyWaterTargetMl
+                    ? `Goal met (+${(selectedDay.waterMl - profile.dailyWaterTargetMl).toLocaleString('en-US')} ml)`
+                    : `${(profile.dailyWaterTargetMl - selectedDay.waterMl).toLocaleString('en-US')} ml remaining to goal`}
+                </span>
+              </div>
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );

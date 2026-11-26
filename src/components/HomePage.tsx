@@ -194,7 +194,8 @@ export const HomePage: React.FC<HomePageProps> = ({
             className="font-display text-2xl font-bold tracking-tight sm:text-3xl text-balance"
             style={{ color: 'var(--ink-primary)' }}
           >
-            Zdravo, {profile.name}
+            Zdravo,{' '}
+            <span style={{ color: 'var(--brand-title)' }}>{profile.name}</span>
           </h1>
           <p className="mt-1 text-sm" style={{ color: 'var(--ink-secondary)' }}>
             Type any meal and portion for instant AI calorie & macro tracking.
@@ -206,7 +207,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             type="button"
             onClick={() => onChangeDate(-1)}
             aria-label="Previous day"
-            className="flex h-10 w-10 items-center justify-center rounded-xl transition-colors hover:bg-white/60 cursor-pointer"
+            className="flex h-10 w-10 items-center justify-center rounded-xl transition-colors hover:bg-white/60 dark:hover:bg-white/10 cursor-pointer"
             style={{ color: 'var(--ink-primary)' }}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -214,7 +215,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           <button
             type="button"
             onClick={onResetToToday}
-            className="min-w-[6.5rem] px-3 py-1.5 text-center text-xs font-semibold transition-colors hover:bg-white/55 rounded-xl cursor-pointer whitespace-nowrap"
+            className="min-w-[6.5rem] px-3 py-1.5 text-center text-xs font-semibold transition-colors hover:bg-white/55 dark:hover:bg-white/10 rounded-xl cursor-pointer whitespace-nowrap"
             style={{ color: 'var(--ink-primary)' }}
           >
             {formattedDateHeading}
@@ -224,7 +225,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             onClick={() => onChangeDate(1)}
             disabled={selectedDate >= todayKey}
             aria-label="Next day"
-            className="flex h-10 w-10 items-center justify-center rounded-xl transition-colors hover:bg-white/60 disabled:opacity-35 cursor-pointer disabled:cursor-not-allowed"
+            className="flex h-10 w-10 items-center justify-center rounded-xl transition-colors hover:bg-white/60 dark:hover:bg-white/10 disabled:opacity-35 cursor-pointer disabled:cursor-not-allowed"
             style={{ color: 'var(--ink-primary)' }}
           >
             <ChevronRight className="h-4 w-4" />
@@ -271,7 +272,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     strokeLinecap="round"
                     strokeDasharray={circumference}
                     strokeDashoffset={strokeOffset}
-                    className="transition-all duration-500 ease-out"
+                    className="transition-[stroke-dashoffset] duration-500 ease-out"
                   />
                 </svg>
 
@@ -301,7 +302,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
 
             {/* Macronutrient Progress Bars */}
-            <div className="space-y-4 border-t border-black/5 pt-5">
+            <div className="space-y-4 border-t pt-5" style={{ borderColor: 'var(--divider-hairline)' }}>
               {macros.map((macro) => {
                 const pct = Math.min(100, calculateProgressPercent(macro.current, macro.target));
                 return (
@@ -314,7 +315,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                         {macro.current}g / {macro.target}g
                       </span>
                     </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-black/6">
+                    <div
+                      className="h-2 w-full overflow-hidden rounded-full"
+                      style={{ backgroundColor: 'var(--track-bg)' }}
+                    >
                       <div
                         className="h-full rounded-full transition-all duration-300"
                         style={{
@@ -358,7 +362,10 @@ export const HomePage: React.FC<HomePageProps> = ({
               </span>
             </div>
 
-            <div className="mt-5 grid grid-cols-7 gap-2 border-t border-black/5 pt-4">
+            <div
+              className="mt-5 grid grid-cols-7 gap-2 border-t pt-4"
+              style={{ borderColor: 'var(--divider-hairline)' }}
+            >
               {weeklyDays.map((day) => {
                 const logged = day.calories > 0 || day.waterMl > 0;
                 const isToday = day.date === todayKey;
@@ -370,8 +377,8 @@ export const HomePage: React.FC<HomePageProps> = ({
                     <span
                       className="flex h-8 w-8 items-center justify-center rounded-xl text-xs font-semibold transition-colors"
                       style={{
-                        background: logged ? 'var(--accent-primary)' : 'rgba(255,255,255,0.45)',
-                        color: logged ? '#ffffff' : 'var(--ink-muted)',
+                        background: logged ? 'var(--accent-primary)' : 'var(--surface-block)',
+                        color: logged ? 'var(--accent-contrast)' : 'var(--ink-muted)',
                         outline: isToday ? '2px solid var(--accent-primary)' : 'none',
                         outlineOffset: '2px',
                       }}
@@ -424,8 +431,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               <button
                 type="button"
                 onClick={() => onQuickAddBegova(selectedMealType)}
-                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-transform duration-150 hover:opacity-95 active:scale-[0.98] whitespace-nowrap shrink-0 cursor-pointer"
-                style={{ backgroundColor: 'var(--accent-primary)' }}
+                className="btn-theme-gradient inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold text-white whitespace-nowrap shrink-0 cursor-pointer"
               >
                 <Sparkles className="h-4 w-4" aria-hidden="true" />
                 Add Begova čorba
@@ -443,7 +449,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <button
                   type="button"
                   onClick={() => setFilterMode(filterMode === 'all' ? 'selected' : 'all')}
-                  className="min-h-[38px] rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-white/50 whitespace-nowrap cursor-pointer"
+                  className="min-h-[38px] rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-white/50 dark:hover:bg-white/10 whitespace-nowrap cursor-pointer"
                   style={{ color: 'var(--ink-secondary)' }}
                 >
                   {filterMode === 'all' ? 'Showing all meals' : `Filtering: ${selectedMealType}`}
@@ -451,7 +457,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <button
                   type="button"
                   onClick={() => onToggleComposer(!showComposer)}
-                  className="glass-block inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-colors hover:bg-white/70 whitespace-nowrap shrink-0 cursor-pointer"
+                  className="glass-block inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-colors hover:bg-white/70 dark:hover:bg-white/10 whitespace-nowrap shrink-0 cursor-pointer"
                   style={{
                     color: showComposer ? 'var(--ink-primary)' : 'var(--accent-primary)',
                   }}
@@ -482,7 +488,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                       setFilterMode('selected');
                     }}
                     className={`flex min-h-[56px] flex-col items-start justify-center rounded-2xl px-3.5 py-2 text-left transition-all duration-150 cursor-pointer ${
-                      active ? 'glass-block-active' : 'glass-block hover:bg-white/65'
+                      active ? 'glass-block-active' : 'glass-block hover:bg-white/65 dark:hover:bg-white/10'
                     }`}
                   >
                     <span
@@ -519,7 +525,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                         key={fav.name}
                         type="button"
                         onClick={() => applyQuickPreset(fav)}
-                        className="glass-block rounded-lg px-2.5 py-1 text-[11px] font-medium hover:bg-white/80 transition-colors cursor-pointer"
+                        className="glass-block rounded-lg px-2.5 py-1 text-[11px] font-medium hover:bg-white/80 dark:hover:bg-white/10 transition-colors cursor-pointer"
                         style={{ color: 'var(--ink-secondary)' }}
                       >
                         {fav.name.split(' (')[0]}
@@ -544,7 +550,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="e.g., Burek sa sirom or Yogurt bowl"
-                      className="w-full min-h-[42px] rounded-xl border border-black/12 bg-white/75 backdrop-blur-md px-3.5 py-2 text-sm outline-none focus:border-current"
+                      className="w-full min-h-[42px] rounded-xl border border-black/12 dark:border-white/15 bg-white/75 dark:bg-slate-900/75 backdrop-blur-md px-3.5 py-2 text-sm outline-none focus:border-current"
                       style={{ color: 'var(--ink-primary)' }}
                     />
                   </div>
@@ -565,7 +571,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                       value={calories}
                       onChange={(e) => setCalories(e.target.value)}
                       placeholder="320"
-                      className="font-tabular w-full min-h-[42px] rounded-xl border border-black/12 bg-white/75 backdrop-blur-md px-3.5 py-2 text-sm outline-none focus:border-current"
+                      className="font-tabular w-full min-h-[42px] rounded-xl border border-black/12 dark:border-white/15 bg-white/75 dark:bg-slate-900/75 backdrop-blur-md px-3.5 py-2 text-sm outline-none focus:border-current"
                       style={{ color: 'var(--ink-primary)' }}
                     />
                   </div>
@@ -586,7 +592,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                         value={protein}
                         onChange={(e) => setProtein(e.target.value)}
                         placeholder="18"
-                        className="font-tabular w-full min-h-[42px] rounded-xl border border-black/12 bg-white/75 backdrop-blur-md px-2.5 py-2 text-sm outline-none focus:border-current"
+                        className="font-tabular w-full min-h-[42px] rounded-xl border border-black/12 dark:border-white/15 bg-white/75 dark:bg-slate-900/75 backdrop-blur-md px-2.5 py-2 text-sm outline-none focus:border-current"
                         style={{ color: 'var(--ink-primary)' }}
                       />
                     </div>
@@ -605,7 +611,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                         value={carbs}
                         onChange={(e) => setCarbs(e.target.value)}
                         placeholder="30"
-                        className="font-tabular w-full min-h-[42px] rounded-xl border border-black/12 bg-white/75 backdrop-blur-md px-2.5 py-2 text-sm outline-none focus:border-current"
+                        className="font-tabular w-full min-h-[42px] rounded-xl border border-black/12 dark:border-white/15 bg-white/75 dark:bg-slate-900/75 backdrop-blur-md px-2.5 py-2 text-sm outline-none focus:border-current"
                         style={{ color: 'var(--ink-primary)' }}
                       />
                     </div>
@@ -624,7 +630,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                         value={fat}
                         onChange={(e) => setFat(e.target.value)}
                         placeholder="12"
-                        className="font-tabular w-full min-h-[42px] rounded-xl border border-black/12 bg-white/75 backdrop-blur-md px-2.5 py-2 text-sm outline-none focus:border-current"
+                        className="font-tabular w-full min-h-[42px] rounded-xl border border-black/12 dark:border-white/15 bg-white/75 dark:bg-slate-900/75 backdrop-blur-md px-2.5 py-2 text-sm outline-none focus:border-current"
                         style={{ color: 'var(--ink-primary)' }}
                       />
                     </div>
@@ -632,7 +638,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 </div>
 
                 {formError && (
-                  <p role="alert" className="text-xs font-semibold text-red-700">
+                  <p role="alert" className="text-xs font-semibold text-red-700 dark:text-red-400">
                     {formError}
                   </p>
                 )}
@@ -644,15 +650,14 @@ export const HomePage: React.FC<HomePageProps> = ({
                       setFormError(null);
                       onToggleComposer(false);
                     }}
-                    className="min-h-[40px] rounded-xl px-4 py-2 text-xs font-semibold transition-colors hover:bg-black/5 cursor-pointer"
+                    className="min-h-[40px] rounded-xl px-4 py-2 text-xs font-semibold transition-colors hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
                     style={{ color: 'var(--ink-secondary)' }}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="min-h-[40px] rounded-xl px-5 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-95 cursor-pointer"
-                    style={{ backgroundColor: 'var(--accent-primary)' }}
+                    className="btn-theme-gradient min-h-[40px] rounded-xl px-5 py-2 text-xs font-semibold text-white cursor-pointer"
                   >
                     Save meal
                   </button>
@@ -661,7 +666,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             )}
 
             {/* Logged Meal Entries */}
-            <div className="mt-5 divide-y divide-black/6">
+            <div className="mt-5 divide-y divide-black/6 dark:divide-white/10">
               {visibleMeals.length === 0 ? (
                 <div className="py-10 text-center">
                   <p className="text-sm font-medium" style={{ color: 'var(--ink-secondary)' }}>
@@ -711,7 +716,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                         type="button"
                         onClick={() => onDeleteMeal(meal.id)}
                         aria-label={`Delete ${meal.name}`}
-                        className="flex h-9 w-9 items-center justify-center rounded-xl transition-colors hover:bg-red-50 hover:text-red-700 cursor-pointer"
+                        className="flex h-9 w-9 items-center justify-center rounded-xl transition-colors hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/50 dark:hover:text-red-400 cursor-pointer"
                         style={{ color: 'var(--ink-muted)' }}
                       >
                         <Trash2 className="h-4 w-4" />

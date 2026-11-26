@@ -1,4 +1,4 @@
-export type ThemeId = 'unicorn' | 'thunder' | 'soup' | 'copper';
+export type ThemeId = 'unicorn' | 'thunder' | 'soup' | 'copper' | 'dark';
 
 export type PageId = 'home' | 'water' | 'stats' | 'profile';
 

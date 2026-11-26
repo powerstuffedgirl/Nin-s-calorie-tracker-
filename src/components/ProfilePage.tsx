@@ -129,7 +129,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           noValidate
           className="glass-panel rounded-3xl p-6 lg:col-span-7 space-y-6"
         >
-          <div className="flex items-center justify-between border-b border-black/6 pb-4">
+          <div
+            className="flex items-center justify-between border-b pb-4"
+            style={{ borderColor: 'var(--divider-hairline)' }}
+          >
             <div>
               <h2 className="font-display text-lg font-bold" style={{ color: 'var(--ink-primary)' }}>
                 Body & Daily Goals
@@ -267,16 +270,19 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           </label>
 
           {error && (
-            <p role="alert" className="text-xs font-semibold text-red-700">
+            <p role="alert" className="text-xs font-semibold text-red-700 dark:text-red-400">
               {error}
             </p>
           )}
 
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-black/6 pt-4">
+          <div
+            className="flex flex-wrap items-center justify-between gap-3 border-t pt-4"
+            style={{ borderColor: 'var(--divider-hairline)' }}
+          >
             {savedNotice ? (
               <span
                 role="status"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400"
               >
                 <Check className="h-4 w-4" aria-hidden="true" />
                 Profile targets saved
@@ -289,8 +295,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
             <button
               type="submit"
-              className="min-h-[44px] rounded-2xl px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-95 cursor-pointer whitespace-nowrap"
-              style={{ backgroundColor: 'var(--accent-primary)' }}
+              className="btn-theme-gradient min-h-[44px] rounded-2xl px-6 py-2.5 text-sm font-semibold text-white cursor-pointer whitespace-nowrap"
             >
               Save changes
             </button>
@@ -315,8 +320,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 <button
                   type="button"
                   onClick={onRestoreLaurel}
-                  className="min-h-[42px] rounded-xl px-4 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-95 cursor-pointer"
-                  style={{ backgroundColor: 'var(--accent-primary)' }}
+                  className="btn-theme-gradient min-h-[42px] rounded-xl px-4 py-2 text-xs font-semibold text-white cursor-pointer"
                 >
                   Show Message from Laurel
                 </button>
@@ -360,14 +364,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     value={apiKeyDraft}
                     onChange={(e) => setApiKeyDraft(e.target.value)}
                     placeholder="AIza..."
-                    className="font-tabular min-h-[42px] w-full bg-transparent py-2 text-xs outline-none placeholder:text-black/35"
+                    className="font-tabular min-h-[42px] w-full bg-transparent py-2 text-xs outline-none placeholder:text-black/35 dark:placeholder:text-white/35"
                     style={{ color: 'var(--ink-primary)' }}
                   />
                   <button
                     type="button"
                     onClick={() => setShowApiKey((prev) => !prev)}
                     aria-label={showApiKey ? 'Hide Gemini API key' : 'Show Gemini API key'}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg hover:bg-white/50 transition-colors cursor-pointer"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg hover:bg-white/50 dark:hover:bg-white/10 transition-colors cursor-pointer"
                     style={{ color: 'var(--ink-secondary)' }}
                   >
                     {showApiKey ? (
@@ -382,8 +386,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="submit"
-                  className="min-h-[40px] rounded-xl px-4 py-2 text-xs font-semibold text-white shadow-xs transition-opacity hover:opacity-95 cursor-pointer"
-                  style={{ backgroundColor: 'var(--accent-primary)' }}
+                  className="btn-theme-gradient min-h-[40px] rounded-xl px-4 py-2 text-xs font-semibold text-white cursor-pointer"
                 >
                   Save API key
                 </button>
@@ -391,7 +394,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   <button
                     type="button"
                     onClick={handleClearApiKey}
-                    className="glass-block inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-colors hover:bg-white/60 cursor-pointer"
+                    className="glass-block inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-colors hover:bg-white/60 dark:hover:bg-white/10 cursor-pointer"
                     style={{ color: 'var(--ink-primary)' }}
                   >
                     <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -410,7 +413,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               {apiKeyNotice && (
                 <p
                   role="status"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400"
                 >
                   <Check className="h-3.5 w-3.5" aria-hidden="true" />
                   {apiKeyNotice}
@@ -438,8 +441,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   <button
                     type="button"
                     onClick={() => setPendingResetAction('zero')}
-                    className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold text-white shadow-xs transition-opacity hover:opacity-95 cursor-pointer"
-                    style={{ backgroundColor: 'var(--accent-primary)' }}
+                    className="btn-theme-gradient inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold text-white cursor-pointer"
                   >
                     <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                     Set all data to 0
@@ -447,7 +449,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   <button
                     type="button"
                     onClick={() => setPendingResetAction('sample')}
-                    className="glass-block inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold transition-colors hover:bg-white/80 cursor-pointer"
+                    className="glass-block inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold transition-colors hover:bg-white/80 dark:hover:bg-white/10 cursor-pointer"
                     style={{ color: 'var(--ink-primary)' }}
                   >
                     <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
@@ -475,7 +477,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     <button
                       type="button"
                       onClick={() => setPendingResetAction(null)}
-                      className="min-h-[40px] rounded-xl px-3 py-2 text-xs font-semibold hover:bg-black/5 cursor-pointer"
+                      className="min-h-[40px] rounded-xl px-3 py-2 text-xs font-semibold hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
                       style={{ color: 'var(--ink-secondary)' }}
                     >
                       Cancel
@@ -503,7 +505,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     <button
                       type="button"
                       onClick={() => setPendingResetAction(null)}
-                      className="min-h-[40px] rounded-xl px-3 py-2 text-xs font-semibold hover:bg-black/5 cursor-pointer"
+                      className="min-h-[40px] rounded-xl px-3 py-2 text-xs font-semibold hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
                       style={{ color: 'var(--ink-secondary)' }}
                     >
                       Cancel
@@ -516,7 +518,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             {resetNotice && (
               <p
                 role="status"
-                className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700"
+                className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400"
               >
                 <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 {resetNotice}

@@ -207,6 +207,52 @@ export function calculateWeeklyOverview(
   };
 }
 
+export interface WeeklyHydrationSummary {
+  loggedDaysCount: number;
+  goalMetDays: number;
+  avgWaterMl: number;
+  avgDeltaMl: number;
+  yAxisMaxMl: number;
+}
+
+export function summarizeWeeklyHydration(
+  days: WeeklyDayStat[],
+  dailyWaterTargetMl: number
+): WeeklyHydrationSummary {
+  const safeTarget = Math.max(500, Math.round(dailyWaterTargetMl));
+  let loggedDaysCount = 0;
+  let goalMetDays = 0;
+  let sumWaterMl = 0;
+  let maxDayMl = 0;
+
+  for (const day of days) {
+    const ml = Math.max(0, Math.round(day.waterMl));
+    if (ml > 0) {
+      loggedDaysCount += 1;
+      sumWaterMl += ml;
+    }
+    if (ml >= safeTarget) {
+      goalMetDays += 1;
+    }
+    if (ml > maxDayMl) {
+      maxDayMl = ml;
+    }
+  }
+
+  const avgWaterMl = loggedDaysCount > 0 ? Math.round(sumWaterMl / loggedDaysCount) : 0;
+  const avgDeltaMl = avgWaterMl - safeTarget;
+  const peak = Math.max(safeTarget * 1.15, maxDayMl, 1000);
+  const yAxisMaxMl = Math.ceil(peak / 500) * 500;
+
+  return {
+    loggedDaysCount,
+    goalMetDays,
+    avgWaterMl,
+    avgDeltaMl,
+    yAxisMaxMl,
+  };
+}
+
 export function detectCalorieMilestone(
   prevCalories: number,
   nextCalories: number,

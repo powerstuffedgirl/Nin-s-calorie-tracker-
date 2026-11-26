@@ -144,7 +144,7 @@ export const LaurelBubble: React.FC<LaurelBubbleProps> = ({
             type="button"
             onClick={handleToggleMin}
             aria-label="Expand Message from Laurel"
-            className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-black/5 cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
             style={{ color: 'var(--ink-secondary)' }}
           >
             <Maximize2 className="h-3.5 w-3.5" />
@@ -153,7 +153,7 @@ export const LaurelBubble: React.FC<LaurelBubbleProps> = ({
             type="button"
             onClick={onDismiss}
             aria-label="Dismiss Message from Laurel"
-            className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-black/5 cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
             style={{ color: 'var(--ink-muted)' }}
           >
             <X className="h-3.5 w-3.5" />
@@ -196,7 +196,7 @@ export const LaurelBubble: React.FC<LaurelBubbleProps> = ({
                 type="button"
                 onClick={handleToggleMin}
                 aria-label="Minimize Message from Laurel"
-                className="flex h-8 w-8 items-center justify-center rounded-xl transition-colors hover:bg-black/5 cursor-pointer"
+                className="flex h-8 w-8 items-center justify-center rounded-xl transition-colors hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
                 style={{ color: 'var(--ink-secondary)' }}
               >
                 <Minimize2 className="h-3.5 w-3.5" />
@@ -205,7 +205,7 @@ export const LaurelBubble: React.FC<LaurelBubbleProps> = ({
                 type="button"
                 onClick={onDismiss}
                 aria-label="Dismiss Message from Laurel"
-                className="flex h-8 w-8 items-center justify-center rounded-xl transition-colors hover:bg-black/5 cursor-pointer"
+                className="flex h-8 w-8 items-center justify-center rounded-xl transition-colors hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
                 style={{ color: 'var(--ink-muted)' }}
               >
                 <X className="h-3.5 w-3.5" />
@@ -220,14 +220,17 @@ export const LaurelBubble: React.FC<LaurelBubbleProps> = ({
             {note.text}
           </p>
 
-          <div className="mt-3 flex items-center justify-between border-t border-black/5 pt-2.5">
+          <div
+            className="mt-3 flex items-center justify-between border-t pt-2.5"
+            style={{ borderColor: 'var(--divider-hairline)' }}
+          >
             <span className="font-tabular text-[11px]" style={{ color: 'var(--ink-muted)' }}>
               {(noteIndex % LAUREL_NOTES.length) + 1} / {LAUREL_NOTES.length}
             </span>
             <button
               type="button"
               onClick={onNextNote}
-              className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-colors hover:bg-black/5 cursor-pointer whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-colors hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer whitespace-nowrap"
               style={{ color: 'var(--accent-primary)' }}
             >
               <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />

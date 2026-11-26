@@ -68,10 +68,7 @@ export const PWAInstallButton: React.FC = () => {
               style={{ color: 'var(--ink-primary)' }}
             >
               <li className="glass-block flex items-center gap-2.5 rounded-2xl px-3.5 py-2.5">
-                <span
-                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
-                  style={{ backgroundColor: 'var(--accent-primary)' }}
-                >
+                <span className="btn-theme-gradient flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white">
                   1
                 </span>
                 <span className="inline-flex items-center gap-1">
@@ -79,19 +76,13 @@ export const PWAInstallButton: React.FC = () => {
                 </span>
               </li>
               <li className="glass-block flex items-center gap-2.5 rounded-2xl px-3.5 py-2.5">
-                <span
-                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
-                  style={{ backgroundColor: 'var(--accent-primary)' }}
-                >
+                <span className="btn-theme-gradient flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white">
                   2
                 </span>
                 <span>Scroll and tap &ldquo;Add to Home Screen&rdquo;</span>
               </li>
               <li className="glass-block flex items-center gap-2.5 rounded-2xl px-3.5 py-2.5">
-                <span
-                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
-                  style={{ backgroundColor: 'var(--accent-primary)' }}
-                >
+                <span className="btn-theme-gradient flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white">
                   3
                 </span>
                 <span>Tap &ldquo;Add&rdquo; in the top right corner</span>
@@ -101,8 +92,7 @@ export const PWAInstallButton: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowIOSGuide(false)}
-              className="mt-4 w-full min-h-[42px] rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-95 cursor-pointer"
-              style={{ backgroundColor: 'var(--accent-primary)' }}
+              className="btn-theme-gradient mt-4 w-full min-h-[42px] rounded-xl text-xs font-semibold text-white cursor-pointer"
             >
               Got it
             </button>
