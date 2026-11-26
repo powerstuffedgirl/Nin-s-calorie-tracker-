@@ -114,8 +114,11 @@ export const LaurelBubble: React.FC<LaurelBubbleProps> = ({
         top: `${position.y}px`,
         right: 'auto',
         bottom: 'auto',
+        transform: 'translate3d(0, 0, 0)',
       }
-    : {};
+    : {
+        transform: 'translate3d(0, 0, 0)',
+      };
 
   return (
     <aside

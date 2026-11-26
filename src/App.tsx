@@ -44,10 +44,10 @@ import { PWAInstallButton } from './components/PWAInstallButton';
 import { OfflineIndicator } from './components/OfflineIndicator';
 
 const THEME_META_COLORS: Record<ThemeId, { light: string; dark: string }> = {
-  unicorn: { light: '#fff0f6', dark: '#170b14' },
-  thunder: { light: '#fef9c3', dark: '#151209' },
-  soup: { light: '#ffe4e6', dark: '#1a0c0e' },
-  copper: { light: '#f6d5be', dark: '#170e0a' },
+  unicorn: { light: '#fce4ef', dark: '#170b14' },
+  thunder: { light: '#fef4b0', dark: '#151209' },
+  soup: { light: '#ffd6da', dark: '#1a0c0e' },
+  copper: { light: '#f4cfb4', dark: '#170e0a' },
 };
 
 function getCurrentTimeHHMM(): string {
@@ -359,10 +359,11 @@ export default function App() {
 
       {/* Strict 3-Zone Sleek Top Bar */}
       <header
-        className="sticky top-0 z-30 border-b backdrop-blur-2xl"
+        className="sticky top-0 z-30 border-b backdrop-blur-md"
         style={{
           backgroundColor: 'var(--header-bg)',
           borderColor: 'var(--divider-hairline)',
+          transform: 'translate3d(0, 0, 0)',
         }}
       >
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-8 px-4 sm:px-6">
@@ -519,10 +520,11 @@ export default function App() {
       {/* Mobile Bottom Tab Bar (Compact, <= 15% aggregate sticky height with header) */}
       <nav
         aria-label="Mobile navigation"
-        className="fixed right-0 bottom-0 left-0 z-30 grid h-16 grid-cols-4 items-center border-t backdrop-blur-xl md:hidden"
+        className="fixed right-0 bottom-0 left-0 z-30 grid h-16 grid-cols-4 items-center border-t backdrop-blur-md md:hidden"
         style={{
           backgroundColor: 'var(--mobile-nav-bg)',
           borderColor: 'var(--divider-hairline)',
+          transform: 'translate3d(0, 0, 0)',
         }}
       >
         {NAV_ITEMS.map((item) => {

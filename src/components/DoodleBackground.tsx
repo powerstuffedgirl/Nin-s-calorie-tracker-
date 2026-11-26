@@ -8,7 +8,7 @@ interface DoodleBackgroundProps {
 function CrayonUnicornSvg({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 120 100" fill="none" className={className} aria-hidden="true">
-      <g filter="url(#crayon-texture)" strokeLinecap="round" strokeLinejoin="round">
+      <g strokeLinecap="round" strokeLinejoin="round">
         {/* Pastel mane & tail */}
         <path
           d="M28 54 C14 50, 10 64, 18 72 C24 76, 30 68, 32 62"
@@ -52,7 +52,7 @@ function CrayonUnicornSvg({ className }: { className?: string }) {
 function CrayonCrystalSvg({ className, tint = '#f9a8d4' }: { className?: string; tint?: string }) {
   return (
     <svg viewBox="0 0 80 100" fill="none" className={className} aria-hidden="true">
-      <g filter="url(#crayon-texture)" strokeLinecap="round" strokeLinejoin="round">
+      <g strokeLinecap="round" strokeLinejoin="round">
         <polygon
           points="40,8 64,34 56,88 24,88 16,34"
           fill={tint}
@@ -72,7 +72,7 @@ function CrayonCrystalSvg({ className, tint = '#f9a8d4' }: { className?: string;
 function CrayonSparkleSvg({ className, color = '#ec4899' }: { className?: string; color?: string }) {
   return (
     <svg viewBox="0 0 48 48" fill="none" className={className} aria-hidden="true">
-      <g filter="url(#crayon-texture)" strokeLinecap="round" strokeLinejoin="round">
+      <g strokeLinecap="round" strokeLinejoin="round">
         <path
           d="M24 4 L28 19 L43 24 L28 29 L24 44 L20 29 L5 24 L20 19 Z"
           fill={color}
@@ -88,7 +88,7 @@ function CrayonSparkleSvg({ className, color = '#ec4899' }: { className?: string
 function CrayonThundercloudSvg({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 130 110" fill="none" className={className} aria-hidden="true">
-      <g filter="url(#crayon-texture)" strokeLinecap="round" strokeLinejoin="round">
+      <g strokeLinecap="round" strokeLinejoin="round">
         {/* Cloud */}
         <path
           d="M28 60 C16 60, 12 46, 22 40 C20 26, 36 18, 48 26 C56 14, 78 14, 86 28 C100 26, 112 38, 106 52 C104 58, 96 60, 88 60 Z"
@@ -114,7 +114,7 @@ function CrayonThundercloudSvg({ className }: { className?: string }) {
 function CrayonRainbowSvg({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 140 90" fill="none" className={className} aria-hidden="true">
-      <g filter="url(#crayon-texture)" strokeLinecap="round">
+      <g strokeLinecap="round">
         <path d="M18 76 A52 52 0 0 1 122 76" stroke="#f43f5e" strokeWidth="6" opacity="0.65" />
         <path d="M27 76 A43 43 0 0 1 113 76" stroke="#f59e0b" strokeWidth="6" opacity="0.72" />
         <path d="M36 76 A34 34 0 0 1 104 76" stroke="#10b981" strokeWidth="6" opacity="0.6" />
@@ -130,7 +130,7 @@ function CrayonRainbowSvg({ className }: { className?: string }) {
 function CrayonTomatoSvg({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 100 100" fill="none" className={className} aria-hidden="true">
-      <g filter="url(#crayon-texture)" strokeLinecap="round" strokeLinejoin="round">
+      <g strokeLinecap="round" strokeLinejoin="round">
         {/* Plump tomato */}
         <path
           d="M50 28 C72 26, 86 42, 84 62 C82 80, 66 90, 50 88 C34 90, 18 80, 16 62 C14 42, 28 26, 50 28 Z"
@@ -155,7 +155,7 @@ function CrayonTomatoSvg({ className }: { className?: string }) {
 function CrayonSoupBowlSvg({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 130 110" fill="none" className={className} aria-hidden="true">
-      <g filter="url(#crayon-texture)" strokeLinecap="round" strokeLinejoin="round">
+      <g strokeLinecap="round" strokeLinejoin="round">
         {/* Steam curls */}
         <path d="M44 34 C40 24, 50 20, 46 10" stroke="#b91c1c" strokeWidth="2.2" opacity="0.65" />
         <path d="M65 30 C61 20, 71 16, 67 6" stroke="#b91c1c" strokeWidth="2.2" opacity="0.7" />
@@ -186,7 +186,7 @@ function CrayonSoupBowlSvg({ className }: { className?: string }) {
 function CrayonKnittedSockSvg({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 110 120" fill="none" className={className} aria-hidden="true">
-      <g filter="url(#crayon-texture)" strokeLinecap="round" strokeLinejoin="round">
+      <g strokeLinecap="round" strokeLinejoin="round">
         {/* Ribbed cuff */}
         <rect
           x="44"
@@ -236,7 +236,7 @@ function CrayonKnittedSockSvg({ className }: { className?: string }) {
 function CrayonKnittedSweaterSvg({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 140 120" fill="none" className={className} aria-hidden="true">
-      <g filter="url(#crayon-texture)" strokeLinecap="round" strokeLinejoin="round">
+      <g strokeLinecap="round" strokeLinejoin="round">
         {/* Sweater body & sleeves */}
         <path
           d="M48 24 L26 36 L12 78 L28 84 L40 54 V102 H100 V54 L112 84 L128 78 L114 36 L92 24 C84 32, 56 32, 48 24 Z"
@@ -281,7 +281,7 @@ function CrayonKnittedSweaterSvg({ className }: { className?: string }) {
 function CrayonWinterCapSvg({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 120 110" fill="none" className={className} aria-hidden="true">
-      <g filter="url(#crayon-texture)" strokeLinecap="round" strokeLinejoin="round">
+      <g strokeLinecap="round" strokeLinejoin="round">
         {/* Fluffy pom-pom */}
         <circle
           cx="60"
@@ -333,45 +333,24 @@ function CrayonWinterCapSvg({ className }: { className?: string }) {
 export const DoodleBackground: React.FC<DoodleBackgroundProps> = ({ theme }) => {
   return (
     <div
-      className="pointer-events-none fixed inset-0 z-0 overflow-hidden select-none"
+      className="bg-theme-canvas pointer-events-none fixed inset-0 z-0 overflow-hidden select-none"
       aria-hidden="true"
     >
-      {/* Shared SVG filter for authentic wax-crayon texture */}
-      <svg className="absolute h-0 w-0">
-        <defs>
-          <filter id="crayon-texture">
-            <feTurbulence
-              type="fractalNoise"
-              baseFrequency="0.65"
-              numOctaves="2"
-              result="noise"
-            />
-            <feDisplacementMap
-              in="SourceGraphic"
-              in2="noise"
-              scale="1.6"
-              xChannelSelector="R"
-              yChannelSelector="G"
-            />
-          </filter>
-        </defs>
-      </svg>
-
-      {/* Luminous dreamy blur orbs for sleek depth */}
+      {/* Zero-cost pure radial-gradient ambient orbs (replaces heavy blur-3xl filter passes) */}
       <div
-        className="absolute -top-24 -left-24 h-96 w-96 rounded-full blur-3xl transition-colors duration-500"
-        style={{ background: 'var(--orb-1)' }}
+        className="absolute -top-36 -left-36 h-[34rem] w-[34rem] rounded-full"
+        style={{ background: 'radial-gradient(circle, var(--orb-1) 0%, transparent 68%)' }}
       />
       <div
-        className="absolute top-1/3 -right-24 h-[28rem] w-[28rem] rounded-full blur-3xl transition-colors duration-500"
-        style={{ background: 'var(--orb-2)' }}
+        className="absolute top-1/4 -right-36 h-[38rem] w-[38rem] rounded-full"
+        style={{ background: 'radial-gradient(circle, var(--orb-2) 0%, transparent 68%)' }}
       />
       <div
-        className="absolute -bottom-24 left-1/4 h-96 w-96 rounded-full blur-3xl transition-colors duration-500"
-        style={{ background: 'var(--orb-3)' }}
+        className="absolute -bottom-36 left-1/4 h-[34rem] w-[34rem] rounded-full"
+        style={{ background: 'radial-gradient(circle, var(--orb-3) 0%, transparent 68%)' }}
       />
 
-      {/* Plenty of floating theme-matched pastel crayon doodles framing the outer margins */}
+      {/* Floating theme-matched pastel crayon doodles framing the outer margins */}
       {theme === 'unicorn' && (
         <>
           <CrayonUnicornSvg className="animate-doodle-a absolute top-28 left-[1.5%] hidden w-28 opacity-45 xl:block xl:w-32" />
@@ -380,9 +359,9 @@ export const DoodleBackground: React.FC<DoodleBackgroundProps> = ({ theme }) => 
           <CrayonCrystalSvg className="animate-doodle-a absolute bottom-24 left-[2.5%] w-18 opacity-42" tint="#ddd6fe" />
           <CrayonUnicornSvg className="animate-doodle-b absolute bottom-16 right-[2%] w-28 opacity-42 -scale-x-100" />
           <CrayonSparkleSvg className="animate-doodle-twinkle absolute top-[58%] right-[2.5%] w-12 opacity-52" color="#f59e0b" />
-          <CrayonCrystalSvg className="animate-doodle-b absolute top-[14%] left-[56%] hidden w-14 opacity-30 lg:block" tint="#fde68a" />
+          <CrayonCrystalSvg className="absolute top-[14%] left-[56%] hidden w-14 opacity-30 lg:block" tint="#fde68a" />
           <CrayonSparkleSvg className="animate-doodle-twinkle absolute bottom-[34%] left-[3%] hidden w-9 opacity-45 lg:block" color="#c026d3" />
-          <CrayonSparkleSvg className="animate-doodle-twinkle absolute top-[22%] right-[16%] hidden w-10 opacity-45 lg:block" color="#ec4899" />
+          <CrayonSparkleSvg className="absolute top-[22%] right-[16%] hidden w-10 opacity-45 lg:block" color="#ec4899" />
         </>
       )}
 
@@ -394,7 +373,7 @@ export const DoodleBackground: React.FC<DoodleBackgroundProps> = ({ theme }) => 
           <CrayonRainbowSvg className="animate-doodle-a absolute bottom-20 left-[2%] w-32 opacity-45" />
           <CrayonThundercloudSvg className="animate-doodle-b absolute bottom-16 right-[2%] w-28 opacity-48" />
           <CrayonSparkleSvg className="animate-doodle-twinkle absolute top-[60%] right-[3%] w-11 opacity-55" color="#2563eb" />
-          <CrayonThundercloudSvg className="animate-doodle-b absolute top-[14%] left-[56%] hidden w-20 opacity-30 lg:block" />
+          <CrayonThundercloudSvg className="absolute top-[14%] left-[56%] hidden w-20 opacity-30 lg:block" />
           <CrayonSparkleSvg className="animate-doodle-twinkle absolute bottom-[38%] left-[3%] hidden w-9 opacity-45 lg:block" color="#d97706" />
         </>
       )}
@@ -406,7 +385,7 @@ export const DoodleBackground: React.FC<DoodleBackgroundProps> = ({ theme }) => 
           <CrayonSparkleSvg className="animate-doodle-twinkle absolute top-[46%] left-[2%] w-10 opacity-50" color="#dc2626" />
           <CrayonTomatoSvg className="animate-doodle-a absolute bottom-24 left-[2.5%] w-20 opacity-45" />
           <CrayonSoupBowlSvg className="animate-doodle-b absolute bottom-14 right-[2%] w-32 opacity-46" />
-          <CrayonTomatoSvg className="animate-doodle-b absolute top-[15%] left-[56%] hidden w-16 opacity-30 lg:block" />
+          <CrayonTomatoSvg className="absolute top-[15%] left-[56%] hidden w-16 opacity-30 lg:block" />
           <CrayonSparkleSvg className="animate-doodle-twinkle absolute top-[62%] right-[3%] w-11 opacity-50" color="#ea580c" />
           <CrayonSparkleSvg className="animate-doodle-twinkle absolute bottom-[36%] left-[3%] hidden w-9 opacity-45 lg:block" color="#16a34a" />
         </>
@@ -420,9 +399,9 @@ export const DoodleBackground: React.FC<DoodleBackgroundProps> = ({ theme }) => 
           <CrayonWinterCapSvg className="animate-doodle-a absolute bottom-20 left-[2%] w-26 opacity-48 -rotate-6" />
           <CrayonKnittedSweaterSvg className="animate-doodle-b absolute bottom-14 right-[1.6%] w-32 opacity-48 rotate-3" />
           <CrayonKnittedSockSvg className="animate-doodle-a absolute top-[54%] right-[2%] w-22 opacity-48 -scale-x-100" />
-          <CrayonKnittedSockSvg className="animate-doodle-b absolute top-[14%] left-[56%] hidden w-16 opacity-34 lg:block" />
+          <CrayonKnittedSockSvg className="absolute top-[14%] left-[56%] hidden w-16 opacity-34 lg:block" />
           <CrayonSparkleSvg className="animate-doodle-twinkle absolute bottom-[34%] left-[3.2%] hidden w-9 opacity-50 lg:block" color="#9a3412" />
-          <CrayonSparkleSvg className="animate-doodle-twinkle absolute top-[24%] right-[16%] hidden w-9 opacity-48 lg:block" color="#b45309" />
+          <CrayonSparkleSvg className="absolute top-[24%] right-[16%] hidden w-9 opacity-48 lg:block" color="#b45309" />
         </>
       )}
     </div>

@@ -17,7 +17,7 @@ export const OrbitingUnicornBrand: React.FC<OrbitingUnicornBrandProps> = ({
       onClick={onClick}
       aria-label="Nin's Calorie Tracker — Go to Home"
       className="group relative inline-flex items-center justify-center rounded-2xl px-4 py-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 whitespace-nowrap shrink-0 cursor-pointer"
-      style={{ outlineColor: 'var(--accent-primary)' }}
+      style={{ outlineColor: 'var(--accent-primary)', transformStyle: 'preserve-3d' }}
     >
       {/* Subtle tilted crayon orbital path around "Nin" */}
       <svg
@@ -47,7 +47,7 @@ export const OrbitingUnicornBrand: React.FC<OrbitingUnicornBrandProps> = ({
         className={`font-display relative z-10 font-bold tracking-tight transition-transform duration-200 group-hover:scale-105 ${
           isHero ? 'text-4xl' : 'text-2xl'
         }`}
-        style={{ color: 'var(--brand-title)' }}
+        style={{ color: 'var(--brand-title)', transform: 'translateZ(0px)' }}
       >
         Nin
       </span>
