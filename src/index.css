@@ -13,11 +13,11 @@
   --orb-1: rgba(244, 114, 182, 0.24);
   --orb-2: rgba(251, 207, 232, 0.36);
   --orb-3: rgba(253, 230, 138, 0.24);
-  --surface-glass: rgba(255, 255, 255, 0.5);
-  --surface-glass-strong: rgba(255, 255, 255, 0.74);
-  --surface-block: rgba(255, 255, 255, 0.46);
-  --surface-block-active: rgba(255, 255, 255, 0.68);
-  --surface-subtle: rgba(255, 245, 249, 0.56);
+  --surface-glass: rgba(255, 255, 255, 0.4);
+  --surface-glass-strong: rgba(255, 255, 255, 0.64);
+  --surface-block: rgba(255, 255, 255, 0.36);
+  --surface-block-active: rgba(255, 255, 255, 0.58);
+  --surface-subtle: rgba(255, 245, 249, 0.46);
   --border-glass: rgba(219, 39, 119, 0.14);
   --ink-primary: #2d1b26;
   --ink-secondary: #684c5d;
@@ -40,11 +40,11 @@
   --orb-1: rgba(250, 204, 21, 0.34);
   --orb-2: rgba(147, 197, 253, 0.28);
   --orb-3: rgba(244, 114, 182, 0.18);
-  --surface-glass: rgba(255, 255, 255, 0.52);
-  --surface-glass-strong: rgba(255, 255, 255, 0.76);
-  --surface-block: rgba(255, 255, 255, 0.48);
-  --surface-block-active: rgba(255, 255, 255, 0.7);
-  --surface-subtle: rgba(254, 252, 232, 0.58);
+  --surface-glass: rgba(255, 255, 255, 0.42);
+  --surface-glass-strong: rgba(255, 255, 255, 0.66);
+  --surface-block: rgba(255, 255, 255, 0.38);
+  --surface-block-active: rgba(255, 255, 255, 0.6);
+  --surface-subtle: rgba(254, 252, 232, 0.48);
   --border-glass: rgba(161, 98, 7, 0.16);
   --ink-primary: #261e0c;
   --ink-secondary: #5c4918;
@@ -67,11 +67,11 @@
   --orb-1: rgba(239, 68, 68, 0.24);
   --orb-2: rgba(251, 146, 60, 0.22);
   --orb-3: rgba(253, 164, 175, 0.32);
-  --surface-glass: rgba(255, 255, 255, 0.52);
-  --surface-glass-strong: rgba(255, 255, 255, 0.76);
-  --surface-block: rgba(255, 255, 255, 0.48);
-  --surface-block-active: rgba(255, 255, 255, 0.7);
-  --surface-subtle: rgba(255, 241, 242, 0.58);
+  --surface-glass: rgba(255, 255, 255, 0.42);
+  --surface-glass-strong: rgba(255, 255, 255, 0.66);
+  --surface-block: rgba(255, 255, 255, 0.38);
+  --surface-block-active: rgba(255, 255, 255, 0.6);
+  --surface-subtle: rgba(255, 241, 242, 0.48);
   --border-glass: rgba(185, 28, 28, 0.15);
   --ink-primary: #2b1315;
   --ink-secondary: #683439;
@@ -94,11 +94,11 @@
   --orb-1: rgba(217, 119, 68, 0.34);
   --orb-2: rgba(254, 215, 170, 0.44);
   --orb-3: rgba(180, 83, 9, 0.24);
-  --surface-glass: rgba(255, 248, 242, 0.54);
-  --surface-glass-strong: rgba(255, 248, 242, 0.78);
-  --surface-block: rgba(255, 248, 242, 0.5);
-  --surface-block-active: rgba(255, 248, 242, 0.72);
-  --surface-subtle: rgba(255, 243, 234, 0.6);
+  --surface-glass: rgba(255, 248, 242, 0.44);
+  --surface-glass-strong: rgba(255, 248, 242, 0.68);
+  --surface-block: rgba(255, 248, 242, 0.4);
+  --surface-block-active: rgba(255, 248, 242, 0.62);
+  --surface-subtle: rgba(255, 243, 234, 0.5);
   --border-glass: rgba(154, 52, 18, 0.2);
   --ink-primary: #2a140c;
   --ink-secondary: #5c2e1c;
@@ -138,7 +138,7 @@ body {
   background-color: var(--surface-glass);
   background-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E"),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.64) 0%, var(--surface-glass) 100%);
+    linear-gradient(145deg, rgba(255, 255, 255, 0.54) 0%, var(--surface-glass) 100%);
   -webkit-backdrop-filter: blur(42px) saturate(160%);
   backdrop-filter: blur(42px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.78);
@@ -153,7 +153,7 @@ body {
   background-color: var(--surface-glass-strong);
   background-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.84) 0%, var(--surface-glass-strong) 100%);
+    linear-gradient(145deg, rgba(255, 255, 255, 0.74) 0%, var(--surface-glass-strong) 100%);
   -webkit-backdrop-filter: blur(48px) saturate(165%);
   backdrop-filter: blur(48px) saturate(165%);
   border: 1px solid rgba(255, 255, 255, 0.88);
@@ -168,7 +168,7 @@ body {
   background-color: var(--surface-block);
   background-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E"),
-    linear-gradient(150deg, rgba(255, 255, 255, 0.6) 0%, var(--surface-block) 100%);
+    linear-gradient(150deg, rgba(255, 255, 255, 0.5) 0%, var(--surface-block) 100%);
   -webkit-backdrop-filter: blur(36px) saturate(155%);
   backdrop-filter: blur(36px) saturate(155%);
   border: 1px solid rgba(255, 255, 255, 0.76);
@@ -183,7 +183,7 @@ body {
   background-color: var(--surface-block-active);
   background-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E"),
-    linear-gradient(150deg, rgba(255, 255, 255, 0.8) 0%, var(--surface-block-active) 100%);
+    linear-gradient(150deg, rgba(255, 255, 255, 0.7) 0%, var(--surface-block-active) 100%);
   -webkit-backdrop-filter: blur(38px) saturate(160%);
   backdrop-filter: blur(38px) saturate(160%);
   border: 1.5px solid var(--accent-primary);

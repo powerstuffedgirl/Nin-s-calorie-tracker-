@@ -1,5 +1,17 @@
-import React, { useState } from 'react';
-import { DailyTotals, ProfileSettings, WeeklyOverview } from '../types/tracker';
+import React, { useMemo, useState } from 'react';
+import {
+  Area,
+  Bar,
+  CartesianGrid,
+  Cell,
+  ComposedChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import { DailyTotals, ProfileSettings, WeeklyDayStat, WeeklyOverview } from '../types/tracker';
 import {
   calculateMacroCalorieSplit,
   formatWaterLiters,
@@ -11,6 +23,61 @@ interface StatsPageProps {
   weeklyOverview: WeeklyOverview;
   profile: ProfileSettings;
 }
+
+interface WeeklyTrendDatum extends WeeklyDayStat {
+  index: number;
+  goal: number;
+  deltaFromGoal: number;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload?: WeeklyTrendDatum }>;
+}
+
+const WeeklyTrendsTooltip: React.FC<CustomTooltipProps> = ({ active, payload }) => {
+  if (!active || !payload || payload.length === 0) return null;
+  const datum = payload[0]?.payload;
+  if (!datum) return null;
+
+  const delta = datum.deltaFromGoal;
+  const deltaLabel =
+    datum.calories === 0
+      ? 'No meals logged'
+      : delta === 0
+      ? 'Exact daily goal'
+      : delta > 0
+      ? `+${delta.toLocaleString('en-US')} kcal over goal`
+      : `${Math.abs(delta).toLocaleString('en-US')} kcal under goal`;
+
+  return (
+    <div className="glass-panel-strong rounded-2xl px-3.5 py-2.5 text-xs shadow-lg">
+      <div className="flex items-center justify-between gap-4">
+        <span className="font-display font-bold" style={{ color: 'var(--ink-primary)' }}>
+          {datum.dayShort}, {datum.date.slice(5)}
+        </span>
+        <span
+          className="font-tabular font-semibold"
+          style={{ color: 'var(--accent-primary)' }}
+        >
+          {datum.calories.toLocaleString('en-US')} kcal
+        </span>
+      </div>
+      <p className="mt-1 text-[11px] font-medium" style={{ color: 'var(--ink-secondary)' }}>
+        {deltaLabel}
+      </p>
+      <div
+        className="font-tabular mt-1.5 flex items-center gap-3 border-t border-black/6 pt-1.5 text-[11px]"
+        style={{ color: 'var(--ink-muted)' }}
+      >
+        <span>
+          {datum.protein}g P · {datum.carbs}g C · {datum.fat}g F
+        </span>
+        <span className="text-sky-800">{formatWaterLiters(datum.waterMl)}</span>
+      </div>
+    </div>
+  );
+};
 
 export const StatsPage: React.FC<StatsPageProps> = ({
   todayTotals,
@@ -33,12 +100,36 @@ export const StatsPage: React.FC<StatsPageProps> = ({
   const cLen = (macroSplit.carbsPct / 100) * donutCirc;
   const fLen = (macroSplit.fatPct / 100) * donutCirc;
 
-  const maxWeeklyCal = Math.max(
-    profile.dailyCalorieTarget * 1.15,
-    ...weeklyOverview.days.map((d) => d.calories),
-    1000
+  const chartData: WeeklyTrendDatum[] = useMemo(
+    () =>
+      weeklyOverview.days.map((day, index) => ({
+        ...day,
+        index,
+        goal: profile.dailyCalorieTarget,
+        deltaFromGoal: day.calories - profile.dailyCalorieTarget,
+      })),
+    [weeklyOverview.days, profile.dailyCalorieTarget]
   );
-  const targetLinePct = Math.min(95, (profile.dailyCalorieTarget / maxWeeklyCal) * 100);
+
+  const yAxisMax = useMemo(() => {
+    const peak = Math.max(
+      profile.dailyCalorieTarget * 1.15,
+      ...weeklyOverview.days.map((d) => d.calories),
+      1000
+    );
+    return Math.ceil(peak / 250) * 250;
+  }, [profile.dailyCalorieTarget, weeklyOverview.days]);
+
+  const loggedDays = weeklyOverview.days.filter((d) => d.calories > 0);
+  const avgDelta = weeklyOverview.avgCalories - profile.dailyCalorieTarget;
+  const patternSummary =
+    loggedDays.length === 0
+      ? 'Start logging meals to uncover your 7-day calorie intake trend against your daily goal.'
+      : Math.abs(avgDelta) <= 120
+      ? `Your 7-day average (${weeklyOverview.avgCalories.toLocaleString('en-US')} kcal) tracks right along your daily goal.`
+      : avgDelta < 0
+      ? `Your 7-day average is ${Math.abs(avgDelta).toLocaleString('en-US')} kcal under your daily goal across ${loggedDays.length} logged day${loggedDays.length === 1 ? '' : 's'}.`
+      : `Your 7-day average is ${avgDelta.toLocaleString('en-US')} kcal above your daily goal across ${loggedDays.length} logged day${loggedDays.length === 1 ? '' : 's'}.`;
 
   return (
     <div className="space-y-6">
@@ -50,7 +141,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({
           Nutrition & Weekly Stats
         </h1>
         <p className="mt-1 text-sm" style={{ color: 'var(--ink-secondary)' }}>
-          Daily calorie and macro breakdown alongside your 7-day trend.
+          Daily calorie and macro breakdown alongside your 7-day intake trend vs goal.
         </p>
       </div>
 
@@ -254,115 +345,209 @@ export const StatsPage: React.FC<StatsPageProps> = ({
           </div>
         </section>
 
-        {/* Weekly 7-Day Interactive Overview */}
+        {/* Weekly 7-Day Interactive Trends Chart (Recharts) */}
         <section
-          aria-label="Weekly calorie and hydration overview"
+          aria-label="Weekly calorie trends chart"
           className="glass-panel rounded-3xl p-6 lg:col-span-7"
         >
-          <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="font-display text-lg font-bold" style={{ color: 'var(--ink-primary)' }}>
-                7-Day Calorie Overview
+                Weekly Calorie Trends
               </h2>
-              <p className="mt-0.5 text-xs" style={{ color: 'var(--ink-muted)' }}>
-                Select any day bar to inspect macros and water intake.
+              <p className="mt-0.5 text-xs leading-relaxed" style={{ color: 'var(--ink-muted)' }}>
+                {patternSummary}
               </p>
             </div>
-            <span className="font-tabular text-xs font-medium" style={{ color: 'var(--accent-primary)' }}>
-              Target: {profile.dailyCalorieTarget.toLocaleString('en-US')} kcal
-            </span>
+            <div className="flex flex-wrap items-center gap-3 text-[11px] font-medium" style={{ color: 'var(--ink-secondary)' }}>
+              <span className="inline-flex items-center gap-1.5">
+                <span
+                  className="h-2.5 w-2.5 rounded-xs"
+                  style={{ backgroundColor: 'var(--accent-primary)' }}
+                  aria-hidden="true"
+                />
+                Daily intake
+              </span>
+              <span className="inline-flex items-center gap-1.5 font-tabular">
+                <span
+                  className="inline-block w-4 border-t-2 border-dashed"
+                  style={{ borderColor: 'var(--accent-primary)' }}
+                  aria-hidden="true"
+                />
+                Goal {profile.dailyCalorieTarget.toLocaleString('en-US')} kcal
+              </span>
+            </div>
           </div>
 
-          {/* Interactive Bar Chart */}
-          <div className="mt-6">
-            {/* Value labels row */}
-            <div className="grid grid-cols-7 gap-2 sm:gap-3 mb-2">
-              {weeklyOverview.days.map((day, idx) => {
-                const selected = idx === selectedDayIndex;
-                return (
-                  <span
-                    key={`val-${day.date}`}
-                    className="font-tabular text-center text-[11px] font-medium"
-                    style={{
-                      color: selected ? 'var(--accent-primary)' : 'var(--ink-muted)',
-                    }}
-                  >
-                    {day.calories > 0 ? day.calories : '—'}
-                  </span>
-                );
-              })}
-            </div>
-
-            {/* Plot area with accurate dashed target reference line */}
-            <div className="relative h-44 border-b border-black/8">
-              <div
-                className="pointer-events-none absolute right-0 left-0 border-t border-dashed"
-                style={{
-                  bottom: `${targetLinePct}%`,
-                  borderColor: 'var(--accent-primary)',
-                  opacity: 0.45,
+          {/* Recharts Weekly Trends Composed Chart */}
+          <div className="mt-5 h-64 w-full" role="img" aria-label="7-day daily calorie consumption compared against daily calorie goal">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart
+                data={chartData}
+                margin={{ top: 18, right: 12, left: -6, bottom: 4 }}
+                onClick={(state) => {
+                  const idx =
+                    typeof state?.activeTooltipIndex === 'number'
+                      ? state.activeTooltipIndex
+                      : Number(state?.activeTooltipIndex);
+                  if (!Number.isNaN(idx) && idx >= 0 && idx < chartData.length) {
+                    setSelectedDayIndex(idx);
+                  }
                 }}
-                aria-hidden="true"
-              />
-
-              <div className="grid h-full grid-cols-7 items-end gap-2 sm:gap-3">
-                {weeklyOverview.days.map((day, idx) => {
-                  const heightPct = Math.max(
-                    6,
-                    Math.min(100, (day.calories / maxWeeklyCal) * 100)
-                  );
-                  const selected = idx === selectedDayIndex;
-                  return (
-                    <button
-                      key={day.date}
-                      type="button"
-                      onClick={() => setSelectedDayIndex(idx)}
-                      aria-label={`${day.dayShort} ${day.dayNumber}: ${day.calories} kcal`}
-                      aria-pressed={selected}
-                      className="group flex h-full w-full items-end justify-center cursor-pointer"
-                    >
-                      <div
-                        className="w-full max-w-[2.5rem] rounded-t-xl transition-all duration-300 group-hover:opacity-90"
-                        style={{
-                          height: `${heightPct}%`,
-                          backgroundColor: selected
-                            ? 'var(--accent-primary)'
-                            : 'var(--accent-soft)',
-                          border: selected
-                            ? '1px solid var(--accent-primary)'
-                            : '1px solid var(--border-glass)',
-                        }}
+              >
+                <defs>
+                  <linearGradient id="weeklyCalorieTrendFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--accent-primary)" stopOpacity={0.26} />
+                    <stop offset="95%" stopColor="var(--accent-primary)" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid
+                  stroke="rgba(45, 27, 38, 0.08)"
+                  strokeDasharray="3 4"
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="dayShort"
+                  axisLine={{ stroke: 'rgba(45, 27, 38, 0.1)' }}
+                  tickLine={false}
+                  tick={{
+                    fill: 'var(--ink-secondary)',
+                    fontSize: 12,
+                    fontWeight: 600,
+                  }}
+                  dy={6}
+                />
+                <YAxis
+                  domain={[0, yAxisMax]}
+                  axisLine={false}
+                  tickLine={false}
+                  width={46}
+                  tick={{
+                    fill: 'var(--ink-muted)',
+                    fontSize: 11,
+                    fontFamily: 'var(--font-mono)',
+                  }}
+                  tickFormatter={(value: number) =>
+                    value >= 1000 ? `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)}k` : `${value}`
+                  }
+                />
+                <Tooltip
+                  content={<WeeklyTrendsTooltip />}
+                  cursor={{ fill: 'rgba(255, 255, 255, 0.25)' }}
+                />
+                <ReferenceLine
+                  y={profile.dailyCalorieTarget}
+                  stroke="var(--accent-primary)"
+                  strokeWidth={1.75}
+                  strokeDasharray="6 4"
+                  label={{
+                    value: `Goal ${profile.dailyCalorieTarget.toLocaleString('en-US')}`,
+                    position: 'insideTopRight',
+                    fill: 'var(--accent-primary)',
+                    fontSize: 11,
+                    fontWeight: 600,
+                  }}
+                />
+                <Bar
+                  dataKey="calories"
+                  barSize={26}
+                  radius={[8, 8, 2, 2]}
+                  isAnimationActive={false}
+                  onClick={(_data, idx) => {
+                    if (typeof idx === 'number') setSelectedDayIndex(idx);
+                  }}
+                >
+                  {chartData.map((entry, idx) => {
+                    const isSelected = idx === selectedDayIndex;
+                    const overGoal = entry.calories > profile.dailyCalorieTarget * 1.12;
+                    const fill = isSelected
+                      ? 'var(--accent-primary)'
+                      : overGoal
+                      ? 'rgba(220, 38, 38, 0.36)'
+                      : 'var(--accent-soft)';
+                    return (
+                      <Cell
+                        key={entry.date}
+                        fill={fill}
+                        stroke={isSelected ? 'var(--accent-primary)' : 'var(--border-glass)'}
+                        strokeWidth={1}
+                        className="cursor-pointer"
                       />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+                    );
+                  })}
+                </Bar>
+                <Area
+                  type="monotone"
+                  dataKey="calories"
+                  stroke="var(--accent-primary)"
+                  strokeWidth={2.25}
+                  fill="url(#weeklyCalorieTrendFill)"
+                  isAnimationActive={false}
+                  dot={(dotProps) => {
+                    const { cx, cy, index } = dotProps;
+                    if (typeof cx !== 'number' || typeof cy !== 'number' || typeof index !== 'number') {
+                      return <g key={`empty-${String(index)}`} />;
+                    }
+                    const isSelected = index === selectedDayIndex;
+                    return (
+                      <circle
+                        key={`dot-${chartData[index]?.date ?? index}`}
+                        cx={cx}
+                        cy={cy}
+                        r={isSelected ? 5 : 3.5}
+                        fill={isSelected ? 'var(--accent-primary)' : '#ffffff'}
+                        stroke="var(--accent-primary)"
+                        strokeWidth={2}
+                        className="cursor-pointer"
+                        onClick={() => setSelectedDayIndex(index)}
+                      />
+                    );
+                  }}
+                  activeDot={{
+                    r: 6,
+                    fill: 'var(--accent-primary)',
+                    stroke: '#ffffff',
+                    strokeWidth: 2,
+                  }}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
 
-            {/* Weekday labels row */}
-            <div className="mt-2 grid grid-cols-7 gap-2 sm:gap-3">
-              {weeklyOverview.days.map((day, idx) => {
-                const selected = idx === selectedDayIndex;
-                return (
-                  <button
-                    key={`lbl-${day.date}`}
-                    type="button"
-                    onClick={() => setSelectedDayIndex(idx)}
-                    className="text-center text-xs font-semibold cursor-pointer"
-                    style={{
-                      color: selected ? 'var(--ink-primary)' : 'var(--ink-muted)',
-                    }}
+          {/* Quick Day Selector Chips */}
+          <div className="mt-3 grid grid-cols-7 gap-1.5" role="group" aria-label="Select a day to inspect">
+            {chartData.map((day, idx) => {
+              const selected = idx === selectedDayIndex;
+              return (
+                <button
+                  key={`day-select-${day.date}`}
+                  type="button"
+                  onClick={() => setSelectedDayIndex(idx)}
+                  aria-pressed={selected}
+                  className={`${
+                    selected ? 'glass-block-active' : 'glass-block'
+                  } rounded-xl px-1 py-1.5 text-center transition-all cursor-pointer`}
+                >
+                  <span
+                    className="block text-[11px] font-semibold"
+                    style={{ color: selected ? 'var(--accent-primary)' : 'var(--ink-secondary)' }}
                   >
                     {day.dayShort}
-                  </button>
-                );
-              })}
-            </div>
+                  </span>
+                  <span
+                    className="font-tabular block text-[10px]"
+                    style={{ color: selected ? 'var(--ink-primary)' : 'var(--ink-muted)' }}
+                  >
+                    {day.calories > 0 ? day.calories : '0'}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Selected Day Detail Readout */}
           {selectedDay && (
-            <div className="mt-6 grid grid-cols-2 gap-4 border-t border-black/6 pt-5 sm:grid-cols-4">
+            <div className="mt-5 grid grid-cols-2 gap-4 border-t border-black/6 pt-5 sm:grid-cols-4">
               <div>
                 <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>
                   Selected Day
@@ -373,10 +558,17 @@ export const StatsPage: React.FC<StatsPageProps> = ({
               </div>
               <div>
                 <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>
-                  Energy
+                  Energy vs Goal
                 </p>
                 <p className="font-tabular mt-0.5 text-base font-semibold" style={{ color: 'var(--ink-primary)' }}>
                   {selectedDay.calories.toLocaleString('en-US')} kcal
+                </p>
+                <p className="font-tabular text-[11px]" style={{ color: 'var(--ink-muted)' }}>
+                  {selectedDay.calories === 0
+                    ? `${profile.dailyCalorieTarget.toLocaleString('en-US')} left`
+                    : selectedDay.calories > profile.dailyCalorieTarget
+                    ? `+${(selectedDay.calories - profile.dailyCalorieTarget).toLocaleString('en-US')} over`
+                    : `${(profile.dailyCalorieTarget - selectedDay.calories).toLocaleString('en-US')} under`}
                 </p>
               </div>
               <div>
