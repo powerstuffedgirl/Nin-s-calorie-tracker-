@@ -9,17 +9,19 @@ export function loadAppState(): AppState {
     if (!raw) {
       return createSeedState();
     }
-    const parsed = JSON.parse(raw) as Partial<AppState>;
+    const parsed = JSON.parse(raw) as Omit<Partial<AppState>, 'theme'> & { theme?: string };
     const fallback = createSeedState();
+    const legacyDarkTheme = parsed.theme === 'dark';
     return {
       theme:
         parsed.theme === 'unicorn' ||
         parsed.theme === 'thunder' ||
         parsed.theme === 'soup' ||
-        parsed.theme === 'copper' ||
-        parsed.theme === 'dark'
+        parsed.theme === 'copper'
           ? parsed.theme
           : fallback.theme,
+      darkMode:
+        typeof parsed.darkMode === 'boolean' ? parsed.darkMode : legacyDarkTheme,
       meals: Array.isArray(parsed.meals) ? parsed.meals : fallback.meals,
       waterLogs: Array.isArray(parsed.waterLogs) ? parsed.waterLogs : fallback.waterLogs,
       profile: parsed.profile ? { ...fallback.profile, ...parsed.profile } : fallback.profile,

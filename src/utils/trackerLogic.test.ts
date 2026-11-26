@@ -227,6 +227,7 @@ test('createEmptyTrackerState clears all meals, water logs, streak, and weekly s
   const customized = {
     ...seeded,
     theme: 'copper' as const,
+    darkMode: true,
     profile: { ...seeded.profile, currentWeightKg: 61.2, dailyCalorieTarget: 1700 },
   };
 
@@ -237,6 +238,7 @@ test('createEmptyTrackerState clears all meals, water logs, streak, and weekly s
   assert.equal(empty.waterLogs.length, 0);
   assert.equal(empty.celebratedMilestones.length, 0);
   assert.equal(empty.theme, 'copper');
+  assert.equal(empty.darkMode, true);
   assert.equal(empty.profile.currentWeightKg, 61.2);
   assert.equal(empty.profile.dailyCalorieTarget, 1700);
 

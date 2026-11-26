@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { BarChart3, Droplets, Home, Plus, User } from 'lucide-react';
 import {
   AppState,
@@ -43,12 +43,11 @@ import { ProfilePage } from './components/ProfilePage';
 import { PWAInstallButton } from './components/PWAInstallButton';
 import { OfflineIndicator } from './components/OfflineIndicator';
 
-const THEME_META_COLORS: Record<ThemeId, string> = {
-  unicorn: '#fff0f6',
-  thunder: '#fef9c3',
-  soup: '#ffe4e6',
-  copper: '#f6d5be',
-  dark: '#0d101d',
+const THEME_META_COLORS: Record<ThemeId, { light: string; dark: string }> = {
+  unicorn: { light: '#fff0f6', dark: '#170b14' },
+  thunder: { light: '#fef9c3', dark: '#151209' },
+  soup: { light: '#ffe4e6', dark: '#1a0c0e' },
+  copper: { light: '#f6d5be', dark: '#170e0a' },
 };
 
 function getCurrentTimeHHMM(): string {
@@ -73,14 +72,38 @@ export default function App() {
   const [activeMilestone, setActiveMilestone] = useState<MilestoneEvent | null>(null);
   const aiInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Sync theme attribute, dark class & mobile browser theme-color to <html> and persist state
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', state.theme);
-    document.documentElement.classList.toggle('dark', state.theme === 'dark');
+  const hasAppliedThemeRef = useRef(false);
+
+  // Sync theme attribute, dark mode class & mobile browser theme-color atomically to <html>
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    if (hasAppliedThemeRef.current) {
+      root.classList.add('theme-switching');
+    }
+    root.setAttribute('data-theme', state.theme);
+    root.classList.toggle('dark', state.darkMode);
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', THEME_META_COLORS[state.theme]);
+      metaThemeColor.setAttribute(
+        'content',
+        state.darkMode ? THEME_META_COLORS[state.theme].dark : THEME_META_COLORS[state.theme].light
+      );
     }
+    if (hasAppliedThemeRef.current) {
+      // Force synchronous style flush so every token updates in one atomic frame
+      void root.offsetHeight;
+      const rafId = window.requestAnimationFrame(() => {
+        root.classList.remove('theme-switching');
+      });
+      return () => {
+        window.cancelAnimationFrame(rafId);
+        root.classList.remove('theme-switching');
+      };
+    }
+    hasAppliedThemeRef.current = true;
+  }, [state.theme, state.darkMode]);
+
+  useEffect(() => {
     saveAppState(state);
   }, [state]);
 
@@ -135,6 +158,10 @@ export default function App() {
 
   const handleSetTheme = (theme: ThemeId) => {
     setState((prev) => ({ ...prev, theme }));
+  };
+
+  const handleToggleDarkMode = () => {
+    setState((prev) => ({ ...prev, darkMode: !prev.darkMode }));
   };
 
   const handleAddMeal = (mealInput: {
@@ -390,7 +417,12 @@ export default function App() {
       <main className="relative z-10 mx-auto max-w-6xl px-4 pt-5 sm:px-6">
         {/* Compact Icon-Only Theme Toggle Bar + In-App PWA Install */}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <ThemeSwitcher theme={state.theme} onChange={handleSetTheme} />
+          <ThemeSwitcher
+            theme={state.theme}
+            darkMode={state.darkMode}
+            onChange={handleSetTheme}
+            onToggleDarkMode={handleToggleDarkMode}
+          />
           <div className="flex items-center gap-3">
             <PWAInstallButton />
             <p className="hidden sm:block text-xs font-medium" style={{ color: 'var(--ink-muted)' }}>

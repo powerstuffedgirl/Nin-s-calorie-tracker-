@@ -1,4 +1,4 @@
-export type ThemeId = 'unicorn' | 'thunder' | 'soup' | 'copper' | 'dark';
+export type ThemeId = 'unicorn' | 'thunder' | 'soup' | 'copper';
 
 export type PageId = 'home' | 'water' | 'stats' | 'profile';
 
@@ -83,6 +83,7 @@ export interface WeeklyOverview {
 
 export interface AppState {
   theme: ThemeId;
+  darkMode: boolean;
   meals: MealEntry[];
   waterLogs: WaterEntry[];
   profile: ProfileSettings;

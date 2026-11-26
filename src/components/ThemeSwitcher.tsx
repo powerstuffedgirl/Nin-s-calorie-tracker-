@@ -1,53 +1,43 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronDown, CloudLightning, Moon, Shirt, Sparkles, UtensilsCrossed } from 'lucide-react';
+import { ChevronDown, CloudLightning, Moon, Shirt, Sparkles, Sun, UtensilsCrossed } from 'lucide-react';
 import { ThemeId } from '../types/tracker';
 
 interface ThemeSwitcherProps {
   theme: ThemeId;
+  darkMode: boolean;
   onChange: (theme: ThemeId) => void;
+  onToggleDarkMode: () => void;
 }
 
 const THEMES: {
   id: ThemeId;
   label: string;
   swatch: string;
-  iconColor: string;
   icon: React.FC<{ className?: string }>;
 }[] = [
   {
     id: 'unicorn',
     label: 'Unicorn & Crystals theme',
     swatch: 'linear-gradient(135deg, #fbcfe8, #fef3c7)',
-    iconColor: 'rgba(15, 23, 42, 0.78)',
     icon: Sparkles,
   },
   {
     id: 'thunder',
     label: 'Thunderclouds & Rainbows theme',
     swatch: 'linear-gradient(135deg, #fef08a, #bfdbfe)',
-    iconColor: 'rgba(15, 23, 42, 0.78)',
     icon: CloudLightning,
   },
   {
     id: 'soup',
     label: 'Tomatoes & Soup Bowl theme',
     swatch: 'linear-gradient(135deg, #fca5a5, #fed7aa)',
-    iconColor: 'rgba(15, 23, 42, 0.78)',
     icon: UtensilsCrossed,
   },
   {
     id: 'copper',
     label: 'Cozy Knits & Copper theme',
     swatch: 'linear-gradient(135deg, #f6c4a0, #c8764b)',
-    iconColor: 'rgba(15, 23, 42, 0.78)',
     icon: Shirt,
-  },
-  {
-    id: 'dark',
-    label: 'Midnight Dark theme',
-    swatch: 'linear-gradient(135deg, #1e1b4b, #3b0764)',
-    iconColor: '#fde68a',
-    icon: Moon,
   },
 ];
 
@@ -103,7 +93,12 @@ function TulipSymbolSvg({ className }: { className?: string }) {
   );
 }
 
-export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ theme, onChange }) => {
+export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({
+  theme,
+  darkMode,
+  onChange,
+  onToggleDarkMode,
+}) => {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -139,8 +134,8 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ theme, onChange })
         onClick={() => setOpen((prev) => !prev)}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label={`Theme menu (${activeTheme.label})`}
-        title={`Theme: ${activeTheme.label}`}
+        aria-label={`Theme menu (${activeTheme.label}, ${darkMode ? 'Dark mode' : 'Light mode'})`}
+        title={`Theme: ${activeTheme.label} (${darkMode ? 'Dark' : 'Light'})`}
         className="glass-panel inline-flex h-11 items-center gap-1.5 rounded-2xl px-3 transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
       >
         <TulipSymbolSvg className="h-6 w-6 shrink-0" />
@@ -183,7 +178,7 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ theme, onChange })
               >
                 <span
                   className="flex h-6 w-6 items-center justify-center rounded-full border border-black/15 dark:border-white/20"
-                  style={{ background: item.swatch, color: item.iconColor }}
+                  style={{ background: item.swatch, color: 'rgba(15, 23, 42, 0.78)' }}
                   aria-hidden="true"
                 >
                   <Icon className="h-3.5 w-3.5" />
@@ -191,6 +186,53 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ theme, onChange })
               </button>
             );
           })}
+
+          {/* Subtle divider between the 4 color themes and the Light/Dark mode switch */}
+          <span
+            className="mx-0.5 h-6 w-px shrink-0"
+            style={{ backgroundColor: 'var(--divider-hairline)' }}
+            aria-hidden="true"
+          />
+
+          {/* Orthogonal Light / Dark Mode Switch (applies to all 4 themes) */}
+          <button
+            type="button"
+            role="switch"
+            aria-checked={darkMode}
+            aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={darkMode ? 'Dark mode on — click for light mode' : 'Light mode on — click for dark mode'}
+            onClick={onToggleDarkMode}
+            className="relative flex h-10 items-center gap-1.5 rounded-xl px-2.5 transition-all duration-150 hover:bg-white/50 dark:hover:bg-white/10 cursor-pointer shrink-0"
+            style={{
+              background: darkMode ? 'var(--surface-block-active)' : 'transparent',
+              outline: darkMode ? '1.5px solid var(--accent-primary)' : '1px solid var(--divider-hairline)',
+              outlineOffset: '-1px',
+            }}
+          >
+            <Sun
+              className={`h-3.5 w-3.5 transition-opacity ${darkMode ? 'opacity-40' : 'opacity-100'}`}
+              style={{ color: darkMode ? 'var(--ink-muted)' : 'var(--accent-primary)' }}
+              aria-hidden="true"
+            />
+            <span
+              className="relative inline-flex h-4.5 w-8 items-center rounded-full transition-colors"
+              style={{
+                backgroundColor: darkMode ? 'var(--accent-primary)' : 'var(--track-bg)',
+              }}
+              aria-hidden="true"
+            >
+              <span
+                className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm ring-1 ring-black/20 transition-transform duration-150 ${
+                  darkMode ? 'translate-x-4' : 'translate-x-0.5'
+                }`}
+              />
+            </span>
+            <Moon
+              className={`h-3.5 w-3.5 transition-opacity ${darkMode ? 'opacity-100' : 'opacity-45'}`}
+              style={{ color: darkMode ? 'var(--accent-primary)' : 'var(--ink-muted)' }}
+              aria-hidden="true"
+            />
+          </button>
         </div>
       )}
     </div>

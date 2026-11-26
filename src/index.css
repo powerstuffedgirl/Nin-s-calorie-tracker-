@@ -161,57 +161,176 @@
   --btn-shadow: 0 8px 20px -8px rgba(154, 52, 18, 0.5);
 }
 
-[data-theme="dark"] {
+/* Orthogonal Dark Mode — applies cleanly to all 4 themes */
+.dark {
   color-scheme: dark;
-  --bg-from: #0d101d;
-  --bg-via: #14192b;
-  --bg-to: #1b1730;
-  --orb-1: rgba(244, 114, 182, 0.18);
-  --orb-2: rgba(129, 140, 248, 0.18);
-  --orb-3: rgba(56, 189, 248, 0.14);
-  --surface-glass: rgba(24, 30, 50, 0.62);
-  --surface-glass-strong: rgba(20, 25, 44, 0.84);
-  --surface-block: rgba(30, 38, 64, 0.58);
-  --surface-block-active: rgba(46, 54, 88, 0.8);
-  --surface-subtle: rgba(26, 33, 56, 0.66);
-  --glass-highlight-top: rgba(40, 48, 78, 0.68);
-  --glass-strong-top: rgba(32, 39, 64, 0.86);
-  --glass-block-top: rgba(44, 52, 84, 0.64);
-  --glass-block-active-top: rgba(56, 66, 104, 0.84);
+  /* Unicorn & Crystals (Pink) Dark */
+  --bg-from: #170b14;
+  --bg-via: #21101d;
+  --bg-to: #1b0f21;
+  --orb-1: rgba(244, 114, 182, 0.22);
+  --orb-2: rgba(192, 132, 252, 0.18);
+  --orb-3: rgba(251, 191, 36, 0.12);
+  --surface-glass: rgba(36, 20, 34, 0.62);
+  --surface-glass-strong: rgba(29, 16, 28, 0.84);
+  --surface-block: rgba(46, 26, 44, 0.58);
+  --surface-block-active: rgba(66, 36, 62, 0.82);
+  --surface-subtle: rgba(40, 22, 38, 0.66);
+  --glass-highlight-top: rgba(62, 34, 58, 0.66);
+  --glass-strong-top: rgba(48, 26, 46, 0.86);
+  --glass-block-top: rgba(64, 36, 60, 0.62);
+  --glass-block-active-top: rgba(82, 46, 76, 0.84);
   --glass-border-outer: rgba(255, 255, 255, 0.14);
   --glass-border-strong: rgba(255, 255, 255, 0.18);
-  --glass-inset-top: rgba(255, 255, 255, 0.14);
-  --glass-inset-bottom: rgba(0, 0, 0, 0.34);
-  --glass-shadow: rgba(0, 0, 0, 0.52);
-  --header-bg: rgba(13, 17, 30, 0.78);
-  --mobile-nav-bg: rgba(13, 17, 30, 0.92);
+  --glass-inset-top: rgba(255, 255, 255, 0.13);
+  --glass-inset-bottom: rgba(0, 0, 0, 0.36);
+  --glass-shadow: rgba(0, 0, 0, 0.54);
+  --header-bg: rgba(22, 11, 20, 0.8);
+  --mobile-nav-bg: rgba(22, 11, 20, 0.92);
   --divider-hairline: rgba(255, 255, 255, 0.1);
-  --track-bg: rgba(255, 255, 255, 0.1);
-  --border-glass: rgba(244, 114, 182, 0.22);
-  --ink-primary: #f5f2f8;
-  --ink-secondary: #cbc5d8;
-  --ink-muted: #9f98b2;
+  --track-bg: rgba(255, 255, 255, 0.11);
+  --border-glass: rgba(244, 114, 182, 0.24);
+  --ink-primary: #fdf2f8;
+  --ink-secondary: #e2c8d8;
+  --ink-muted: #b597aa;
   --brand-title: #f472b6;
   --accent-primary: #f472b6;
   --accent-primary-hover: #f9a8d4;
-  --accent-soft: rgba(244, 114, 182, 0.18);
+  --accent-soft: rgba(244, 114, 182, 0.2);
   --accent-ring: #f472b6;
-  --accent-contrast: #240c1b;
+  --accent-contrast: #2a0b1d;
   --macro-protein: #f472b6;
   --macro-carbs: #fbbf24;
-  --macro-fat: #a78bfa;
+  --macro-fat: #c084fc;
   --water-fill: #38bdf8;
   --water-ink: #38bdf8;
   --water-soft: rgba(56, 189, 248, 0.22);
   --chart-grid: rgba(255, 255, 255, 0.1);
   --chart-axis: rgba(255, 255, 255, 0.15);
-  --chart-dot-bg: #151b2e;
+  --chart-dot-bg: #1e111d;
   --chart-cursor: rgba(255, 255, 255, 0.08);
-  --btn-gradient: linear-gradient(135deg, #db2777 0%, #9333ea 56%, #4f46e5 100%);
-  --btn-gradient-hover: linear-gradient(135deg, #ec4899 0%, #a855f7 56%, #6366f1 100%);
+  --btn-gradient: linear-gradient(135deg, #f472b6 0%, #f9a8d4 52%, #fdf2f8 100%);
+  --btn-gradient-hover: linear-gradient(135deg, #ec4899 0%, #f472b6 52%, #fce7f3 100%);
+  --btn-text: #4c1130;
+  --btn-border: rgba(244, 114, 182, 0.42);
+  --btn-shadow: 0 10px 24px -10px rgba(244, 114, 182, 0.42);
+}
+
+.dark[data-theme="thunder"] {
+  --bg-from: #151209;
+  --bg-via: #1f1a0d;
+  --bg-to: #141724;
+  --orb-1: rgba(250, 204, 21, 0.22);
+  --orb-2: rgba(96, 165, 250, 0.18);
+  --orb-3: rgba(244, 114, 182, 0.12);
+  --surface-glass: rgba(34, 30, 18, 0.64);
+  --surface-glass-strong: rgba(28, 24, 14, 0.86);
+  --surface-block: rgba(44, 38, 22, 0.6);
+  --surface-block-active: rgba(64, 54, 28, 0.82);
+  --surface-subtle: rgba(38, 33, 20, 0.68);
+  --glass-highlight-top: rgba(60, 52, 28, 0.66);
+  --glass-strong-top: rgba(48, 41, 22, 0.86);
+  --glass-block-top: rgba(62, 54, 30, 0.62);
+  --glass-block-active-top: rgba(82, 70, 36, 0.84);
+  --header-bg: rgba(21, 18, 9, 0.82);
+  --mobile-nav-bg: rgba(21, 18, 9, 0.92);
+  --border-glass: rgba(250, 204, 21, 0.24);
+  --ink-primary: #fefce8;
+  --ink-secondary: #e2d8b4;
+  --ink-muted: #b5aa84;
+  --brand-title: #facc15;
+  --accent-primary: #facc15;
+  --accent-primary-hover: #fde047;
+  --accent-soft: rgba(250, 204, 21, 0.18);
+  --accent-ring: #facc15;
+  --accent-contrast: #241904;
+  --macro-protein: #60a5fa;
+  --macro-carbs: #facc15;
+  --macro-fat: #f472b6;
+  --chart-dot-bg: #1e190c;
+  --btn-gradient: linear-gradient(135deg, #facc15 0%, #fef08a 52%, #fefce8 100%);
+  --btn-gradient-hover: linear-gradient(135deg, #eab308 0%, #fde047 52%, #fef9c3 100%);
+  --btn-text: #3b2606;
+  --btn-border: rgba(250, 204, 21, 0.42);
+  --btn-shadow: 0 10px 24px -10px rgba(250, 204, 21, 0.36);
+}
+
+.dark[data-theme="soup"] {
+  --bg-from: #1a0c0e;
+  --bg-via: #261215;
+  --bg-to: #1f0e11;
+  --orb-1: rgba(239, 68, 68, 0.22);
+  --orb-2: rgba(251, 146, 60, 0.16);
+  --orb-3: rgba(251, 113, 133, 0.16);
+  --surface-glass: rgba(42, 20, 23, 0.64);
+  --surface-glass-strong: rgba(34, 16, 18, 0.86);
+  --surface-block: rgba(54, 26, 29, 0.6);
+  --surface-block-active: rgba(74, 34, 38, 0.82);
+  --surface-subtle: rgba(46, 22, 25, 0.68);
+  --glass-highlight-top: rgba(68, 32, 36, 0.66);
+  --glass-strong-top: rgba(54, 24, 28, 0.86);
+  --glass-block-top: rgba(70, 34, 38, 0.62);
+  --glass-block-active-top: rgba(90, 42, 46, 0.84);
+  --header-bg: rgba(25, 11, 13, 0.82);
+  --mobile-nav-bg: rgba(25, 11, 13, 0.92);
+  --border-glass: rgba(248, 113, 113, 0.24);
+  --ink-primary: #fff1f2;
+  --ink-secondary: #e7c6ca;
+  --ink-muted: #ba969b;
+  --brand-title: #fb7185;
+  --accent-primary: #f87171;
+  --accent-primary-hover: #fca5a5;
+  --accent-soft: rgba(248, 113, 113, 0.2);
+  --accent-ring: #f87171;
+  --accent-contrast: #29090b;
+  --macro-protein: #f87171;
+  --macro-carbs: #fbbf24;
+  --macro-fat: #4ade80;
+  --chart-dot-bg: #221012;
+  --btn-gradient: linear-gradient(135deg, #dc2626 0%, #b91c1c 52%, #c2410c 100%);
+  --btn-gradient-hover: linear-gradient(135deg, #ef4444 0%, #dc2626 52%, #ea580c 100%);
   --btn-text: #ffffff;
-  --btn-border: rgba(244, 114, 182, 0.35);
-  --btn-shadow: 0 10px 24px -10px rgba(219, 39, 119, 0.55);
+  --btn-border: rgba(248, 113, 113, 0.34);
+  --btn-shadow: 0 10px 24px -10px rgba(220, 38, 38, 0.5);
+}
+
+.dark[data-theme="copper"] {
+  --bg-from: #170e0a;
+  --bg-via: #23150e;
+  --bg-to: #1b100b;
+  --orb-1: rgba(234, 88, 12, 0.22);
+  --orb-2: rgba(251, 191, 36, 0.15);
+  --orb-3: rgba(194, 65, 12, 0.18);
+  --surface-glass: rgba(40, 24, 17, 0.64);
+  --surface-glass-strong: rgba(32, 19, 13, 0.86);
+  --surface-block: rgba(50, 31, 22, 0.6);
+  --surface-block-active: rgba(70, 42, 28, 0.82);
+  --surface-subtle: rgba(44, 27, 19, 0.68);
+  --glass-highlight-top: rgba(66, 40, 28, 0.66);
+  --glass-strong-top: rgba(52, 31, 21, 0.86);
+  --glass-block-top: rgba(68, 42, 29, 0.62);
+  --glass-block-active-top: rgba(88, 52, 35, 0.84);
+  --header-bg: rgba(22, 13, 9, 0.82);
+  --mobile-nav-bg: rgba(22, 13, 9, 0.92);
+  --border-glass: rgba(251, 146, 60, 0.26);
+  --ink-primary: #fff7ed;
+  --ink-secondary: #e4cbbd;
+  --ink-muted: #b89b8a;
+  --brand-title: #fb923c;
+  --accent-primary: #fb923c;
+  --accent-primary-hover: #fdba74;
+  --accent-soft: rgba(251, 146, 60, 0.2);
+  --accent-ring: #fb923c;
+  --accent-contrast: #261006;
+  --macro-protein: #fb923c;
+  --macro-carbs: #fbbf24;
+  --macro-fat: #c084fc;
+  --chart-dot-bg: #20130d;
+  --btn-gradient: linear-gradient(135deg, #c85c2d 0%, #9a3412 52%, #7c2d12 100%);
+  --btn-gradient-hover: linear-gradient(135deg, #ea580c 0%, #c2410c 52%, #9a3412 100%);
+  --btn-text: #ffffff;
+  --btn-border: rgba(251, 146, 60, 0.34);
+  --btn-shadow: 0 10px 24px -10px rgba(234, 88, 12, 0.48);
 }
 
 html,
@@ -223,6 +342,12 @@ body {
   min-height: 100%;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+}
+
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition-property: none !important;
 }
 
 .font-display {

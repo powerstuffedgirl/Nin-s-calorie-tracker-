@@ -413,6 +413,7 @@ export function createSeedState(baseDate: Date = new Date()): AppState {
 
   return {
     theme: 'unicorn',
+    darkMode: false,
     meals,
     waterLogs,
     profile: { ...DEFAULT_PROFILE },
@@ -426,11 +427,12 @@ export function createSeedState(baseDate: Date = new Date()): AppState {
 export function createEmptyTrackerState(
   currentState?: Pick<
     AppState,
-    'theme' | 'profile' | 'laurelDismissed' | 'laurelMinimized' | 'laurelNoteIndex'
+    'theme' | 'darkMode' | 'profile' | 'laurelDismissed' | 'laurelMinimized' | 'laurelNoteIndex'
   >
 ): AppState {
   return {
     theme: currentState?.theme ?? 'unicorn',
+    darkMode: currentState?.darkMode ?? false,
     meals: [],
     waterLogs: [],
     profile: currentState?.profile ? { ...currentState.profile } : { ...DEFAULT_PROFILE },

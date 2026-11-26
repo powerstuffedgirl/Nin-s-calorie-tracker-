@@ -375,7 +375,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                       {day.dayShort}
                     </span>
                     <span
-                      className="flex h-8 w-8 items-center justify-center rounded-xl text-xs font-semibold transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-xl text-xs font-semibold"
                       style={{
                         background: logged ? 'var(--accent-primary)' : 'var(--surface-block)',
                         color: logged ? 'var(--accent-contrast)' : 'var(--ink-muted)',
