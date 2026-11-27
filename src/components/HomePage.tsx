@@ -290,7 +290,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                   <span
                     className="mt-2 text-xs font-semibold"
                     style={{
-                      color: isOverTarget ? '#b91c1c' : 'var(--accent-primary)',
+                      color: isOverTarget ? 'var(--danger-ink)' : 'var(--accent-primary)',
                     }}
                   >
                     {isOverTarget
@@ -367,7 +367,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               style={{ borderColor: 'var(--divider-hairline)' }}
             >
               {weeklyDays.map((day) => {
-                const logged = day.calories > 0 || day.waterMl > 0;
+                const logged = day.calories > 0 || day.waterMl > 0 || day.burnedCalories > 0;
                 const isToday = day.date === todayKey;
                 return (
                   <div key={day.date} className="flex flex-col items-center gap-1.5">
@@ -550,7 +550,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="e.g., Burek sa sirom or Yogurt bowl"
-                      className="w-full min-h-[42px] rounded-xl border border-black/12 dark:border-white/15 bg-white/75 dark:bg-slate-900/75 backdrop-blur-md px-3.5 py-2 text-sm outline-none focus:border-current"
+                      className="glass-block w-full min-h-[42px] rounded-xl px-3.5 py-2 text-sm outline-none focus:border-current"
                       style={{ color: 'var(--ink-primary)' }}
                     />
                   </div>
@@ -571,7 +571,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                       value={calories}
                       onChange={(e) => setCalories(e.target.value)}
                       placeholder="320"
-                      className="font-tabular w-full min-h-[42px] rounded-xl border border-black/12 dark:border-white/15 bg-white/75 dark:bg-slate-900/75 backdrop-blur-md px-3.5 py-2 text-sm outline-none focus:border-current"
+                      className="font-tabular glass-block w-full min-h-[42px] rounded-xl px-3.5 py-2 text-sm outline-none focus:border-current"
                       style={{ color: 'var(--ink-primary)' }}
                     />
                   </div>
@@ -592,7 +592,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                         value={protein}
                         onChange={(e) => setProtein(e.target.value)}
                         placeholder="18"
-                        className="font-tabular w-full min-h-[42px] rounded-xl border border-black/12 dark:border-white/15 bg-white/75 dark:bg-slate-900/75 backdrop-blur-md px-2.5 py-2 text-sm outline-none focus:border-current"
+                        className="font-tabular glass-block w-full min-h-[42px] rounded-xl px-2.5 py-2 text-sm outline-none focus:border-current"
                         style={{ color: 'var(--ink-primary)' }}
                       />
                     </div>
@@ -611,7 +611,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                         value={carbs}
                         onChange={(e) => setCarbs(e.target.value)}
                         placeholder="30"
-                        className="font-tabular w-full min-h-[42px] rounded-xl border border-black/12 dark:border-white/15 bg-white/75 dark:bg-slate-900/75 backdrop-blur-md px-2.5 py-2 text-sm outline-none focus:border-current"
+                        className="font-tabular glass-block w-full min-h-[42px] rounded-xl px-2.5 py-2 text-sm outline-none focus:border-current"
                         style={{ color: 'var(--ink-primary)' }}
                       />
                     </div>
@@ -630,7 +630,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                         value={fat}
                         onChange={(e) => setFat(e.target.value)}
                         placeholder="12"
-                        className="font-tabular w-full min-h-[42px] rounded-xl border border-black/12 dark:border-white/15 bg-white/75 dark:bg-slate-900/75 backdrop-blur-md px-2.5 py-2 text-sm outline-none focus:border-current"
+                        className="font-tabular glass-block w-full min-h-[42px] rounded-xl px-2.5 py-2 text-sm outline-none focus:border-current"
                         style={{ color: 'var(--ink-primary)' }}
                       />
                     </div>

@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { BarChart3, Droplets, Home, Plus, User } from 'lucide-react';
+import { BarChart3, Droplets, Dumbbell, Home, Plus, User } from 'lucide-react';
 import {
   AppState,
+  ExerciseOption,
   MealEntry,
   MealType,
   MilestoneEvent,
@@ -9,6 +10,7 @@ import {
   ProfileSettings,
   ThemeId,
   WaterEntry,
+  WorkoutEntry,
 } from './types/tracker';
 import {
   BEGOVA_CORBA_PRESET,
@@ -22,6 +24,7 @@ import {
   saveAppState,
 } from './utils/storage';
 import {
+  calculateDailyBurnedKcal,
   calculateDailyTotals,
   calculateDailyWaterMl,
   calculateStreak,
@@ -38,6 +41,7 @@ import { LaurelBubble } from './components/LaurelBubble';
 import { MilestoneCelebration } from './components/MilestoneCelebration';
 import { HomePage } from './components/HomePage';
 import { WaterPage } from './components/WaterPage';
+import { WorkoutPage } from './components/WorkoutPage';
 import { StatsPage } from './components/StatsPage';
 import { ProfilePage } from './components/ProfilePage';
 import { PWAInstallButton } from './components/PWAInstallButton';
@@ -58,6 +62,7 @@ function getCurrentTimeHHMM(): string {
 const NAV_ITEMS: { id: PageId; label: string; icon: React.FC<{ className?: string }> }[] = [
   { id: 'home', label: 'Home', icon: Home },
   { id: 'water', label: 'Water', icon: Droplets },
+  { id: 'workout', label: 'Workout', icon: Dumbbell },
   { id: 'stats', label: 'Stats', icon: BarChart3 },
   { id: 'profile', label: 'Profile', icon: User },
 ];
@@ -67,6 +72,7 @@ export default function App() {
   const [state, setState] = useState<AppState>(() => loadAppState());
   const [activePage, setActivePage] = useState<PageId>('home');
   const [selectedDate, setSelectedDate] = useState<string>(todayKey);
+  const [workoutDate, setWorkoutDate] = useState<string>(todayKey);
   const [selectedMealType, setSelectedMealType] = useState<MealType>('lunch');
   const [showMealComposer, setShowMealComposer] = useState<boolean>(false);
   const [activeMilestone, setActiveMilestone] = useState<MilestoneEvent | null>(null);
@@ -140,9 +146,29 @@ export default function App() {
     [state.waterLogs, todayKey]
   );
 
+  const todayWorkouts = useMemo(
+    () => state.workouts.filter((w) => w.date === todayKey),
+    [state.workouts, todayKey]
+  );
+
+  const todayBurnedKcal = useMemo(
+    () => calculateDailyBurnedKcal(state.workouts, todayKey),
+    [state.workouts, todayKey]
+  );
+
+  const workoutsForWorkoutDate = useMemo(
+    () => state.workouts.filter((w) => w.date === workoutDate),
+    [state.workouts, workoutDate]
+  );
+
+  const intakeForWorkoutDate = useMemo(
+    () => calculateDailyTotals(state.meals, workoutDate).calories,
+    [state.meals, workoutDate]
+  );
+
   const streak = useMemo(
-    () => calculateStreak(state.meals, state.waterLogs, todayKey),
-    [state.meals, state.waterLogs, todayKey]
+    () => calculateStreak(state.meals, state.waterLogs, todayKey, state.workouts),
+    [state.meals, state.waterLogs, todayKey, state.workouts]
   );
 
   const weeklyOverview = useMemo(
@@ -151,9 +177,10 @@ export default function App() {
         state.meals,
         state.waterLogs,
         todayKey,
-        state.profile.dailyCalorieTarget
+        state.profile.dailyCalorieTarget,
+        state.workouts
       ),
-    [state.meals, state.waterLogs, todayKey, state.profile.dailyCalorieTarget]
+    [state.meals, state.waterLogs, todayKey, state.profile.dailyCalorieTarget, state.workouts]
   );
 
   const handleSetTheme = (theme: ThemeId) => {
@@ -293,6 +320,35 @@ export default function App() {
     }));
   };
 
+  const handleUpdateMeal = (
+    id: string,
+    updates: {
+      name: string;
+      mealType: MealType;
+      calories: number;
+      protein: number;
+      carbs: number;
+      fat: number;
+    }
+  ) => {
+    setState((prev) => ({
+      ...prev,
+      meals: prev.meals.map((m) =>
+        m.id === id
+          ? {
+              ...m,
+              name: updates.name,
+              mealType: updates.mealType,
+              calories: Math.max(0, Math.round(updates.calories)),
+              protein: Math.max(0, Math.round(updates.protein)),
+              carbs: Math.max(0, Math.round(updates.carbs)),
+              fat: Math.max(0, Math.round(updates.fat)),
+            }
+          : m
+      ),
+    }));
+  };
+
   const handleAddWater = (amountMl: number, label: string) => {
     const prevMl = calculateDailyWaterMl(state.waterLogs, todayKey);
     const nextMl = prevMl + amountMl;
@@ -329,6 +385,78 @@ export default function App() {
     setState((prev) => ({
       ...prev,
       waterLogs: prev.waterLogs.filter((w) => w.id !== id),
+    }));
+  };
+
+  const handleAddWorkout = (
+    entry: Omit<WorkoutEntry, 'id' | 'date' | 'time'>,
+    targetDate?: string
+  ): string => {
+    const id = `wk-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const newWorkout: WorkoutEntry = {
+      ...entry,
+      id,
+      date: targetDate ?? workoutDate,
+      time: getCurrentTimeHHMM(),
+    };
+    setState((prev) => ({
+      ...prev,
+      workouts: [newWorkout, ...prev.workouts],
+    }));
+    return id;
+  };
+
+  const handleDeleteWorkout = (id: string) => {
+    setState((prev) => ({
+      ...prev,
+      workouts: prev.workouts.filter((w) => w.id !== id),
+    }));
+  };
+
+  const handleUpdateWorkout = (
+    id: string,
+    updates: {
+      name: string;
+      caloriesBurned: number;
+      durationMin: number;
+      details?: string;
+    }
+  ) => {
+    setState((prev) => ({
+      ...prev,
+      workouts: prev.workouts.map((w) =>
+        w.id === id
+          ? {
+              ...w,
+              name: updates.name,
+              caloriesBurned: Math.max(1, Math.round(updates.caloriesBurned)),
+              durationMin: Math.max(1, Math.round(updates.durationMin)),
+              details: updates.details !== undefined ? updates.details : w.details,
+            }
+          : w
+      ),
+    }));
+  };
+
+  const handleLogMealsForDate = (dateKey: string) => {
+    setSelectedDate(dateKey);
+    setActivePage('home');
+    window.setTimeout(() => {
+      aiInputRef.current?.focus();
+      aiInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 80);
+  };
+
+  const handleLogWorkoutsForDate = (dateKey: string) => {
+    setWorkoutDate(dateKey);
+    setActivePage('workout');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleAddCustomExercise = (exercise: ExerciseOption) => {
+    setState((prev) => ({
+      ...prev,
+      customExercises: [...prev.customExercises, exercise],
     }));
   };
 
@@ -381,7 +509,10 @@ export default function App() {
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => setActivePage(item.id)}
+                  onClick={() => {
+                    if (item.id === 'workout') setWorkoutDate(todayKey);
+                    setActivePage(item.id);
+                  }}
                   aria-current={active ? 'page' : undefined}
                   className="relative py-2 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                   style={{
@@ -406,7 +537,7 @@ export default function App() {
           <button
             type="button"
             onClick={handleTopBarLogMeal}
-            className="btn-theme-gradient inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold text-white whitespace-nowrap shrink-0 cursor-pointer"
+            className="btn-theme-gradient inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold whitespace-nowrap shrink-0 cursor-pointer"
           >
             <Plus className="h-3.5 w-3.5" aria-hidden="true" />
             Log Meal
@@ -467,11 +598,38 @@ export default function App() {
           />
         )}
 
+        {activePage === 'workout' && (
+          <WorkoutPage
+            selectedDate={workoutDate}
+            todayKey={todayKey}
+            onSelectDate={setWorkoutDate}
+            todayIntakeKcal={intakeForWorkoutDate}
+            todayWorkouts={workoutsForWorkoutDate}
+            customExercises={state.customExercises}
+            profile={state.profile}
+            onAddWorkout={handleAddWorkout}
+            onDeleteWorkout={handleDeleteWorkout}
+            onAddCustomExercise={handleAddCustomExercise}
+            onOpenProfile={() => setActivePage('profile')}
+          />
+        )}
+
         {activePage === 'stats' && (
           <StatsPage
+            todayKey={todayKey}
             todayTotals={todayTotals}
+            todayBurnedKcal={todayBurnedKcal}
+            todayWorkoutCount={todayWorkouts.length}
             weeklyOverview={weeklyOverview}
             profile={state.profile}
+            meals={state.meals}
+            workouts={state.workouts}
+            onUpdateMeal={handleUpdateMeal}
+            onDeleteMeal={handleDeleteMeal}
+            onUpdateWorkout={handleUpdateWorkout}
+            onDeleteWorkout={handleDeleteWorkout}
+            onLogMealsForDate={handleLogMealsForDate}
+            onLogWorkoutsForDate={handleLogWorkoutsForDate}
           />
         )}
 
@@ -487,11 +645,13 @@ export default function App() {
               const empty = clearTrackerDataToZero(state);
               setState(empty);
               setSelectedDate(todayKey);
+              setWorkoutDate(todayKey);
             }}
             onResetData={() => {
               const fresh = resetAppState();
               setState(fresh);
               setSelectedDate(todayKey);
+              setWorkoutDate(todayKey);
             }}
           />
         )}
@@ -520,7 +680,7 @@ export default function App() {
       {/* Mobile Bottom Tab Bar (Compact, <= 15% aggregate sticky height with header) */}
       <nav
         aria-label="Mobile navigation"
-        className="fixed right-0 bottom-0 left-0 z-30 grid h-16 grid-cols-4 items-center border-t backdrop-blur-md md:hidden"
+        className="fixed right-0 bottom-0 left-0 z-30 grid h-16 grid-cols-5 items-center border-t backdrop-blur-md md:hidden"
         style={{
           backgroundColor: 'var(--mobile-nav-bg)',
           borderColor: 'var(--divider-hairline)',
@@ -534,7 +694,10 @@ export default function App() {
             <button
               key={item.id}
               type="button"
-              onClick={() => setActivePage(item.id)}
+              onClick={() => {
+                if (item.id === 'workout') setWorkoutDate(todayKey);
+                setActivePage(item.id);
+              }}
               aria-current={active ? 'page' : undefined}
               className="flex min-h-[48px] flex-col items-center justify-center gap-0.5 transition-colors cursor-pointer"
               style={{

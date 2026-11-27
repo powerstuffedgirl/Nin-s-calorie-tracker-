@@ -1,12 +1,15 @@
 import {
   DailyTotals,
+  ExerciseTrackingMode,
   MealEntry,
   MealType,
   MilestoneEvent,
   ProfileSettings,
+  WalkPace,
   WaterEntry,
   WeeklyDayStat,
   WeeklyOverview,
+  WorkoutEntry,
 } from '../types/tracker';
 import { formatLocalDateKey } from '../data/seedData';
 
@@ -114,18 +117,39 @@ export function shiftDateKey(dateKey: string, deltaDays: number): string {
 }
 
 /**
+ * Only the date exactly 1 day before today (yesterday) is editable as a past date.
+ * Once midnight passes and that date becomes 2+ days old, it is no longer editable.
+ */
+export function isEditablePastDate(dateKey: string, todayKey: string): boolean {
+  return dateKey === shiftDateKey(todayKey, -1);
+}
+
+/**
+ * Returns 'over' when net calorie intake exceeds the daily calorie limit,
+ * or 'in-range' when it is at or below the daily limit.
+ */
+export function getNetCalorieStatus(
+  netCalories: number,
+  dailyCalorieTarget: number
+): 'in-range' | 'over' {
+  return netCalories > dailyCalorieTarget ? 'over' : 'in-range';
+}
+
+/**
  * Computes consecutive daily logging streak ending on todayKey (or yesterdayKey
- * if the user hasn't logged anything yet today). A day counts if at least 1 meal
- * or 1 water entry was logged on that date.
+ * if the user hasn't logged anything yet today). A day counts if at least 1 meal,
+ * 1 water entry, or 1 workout was logged on that date.
  */
 export function calculateStreak(
   meals: MealEntry[],
   waterLogs: WaterEntry[],
-  todayKey: string
+  todayKey: string,
+  workouts: WorkoutEntry[] = []
 ): number {
   const activeDates = new Set<string>();
   for (const m of meals) activeDates.add(m.date);
   for (const w of waterLogs) activeDates.add(w.date);
+  for (const wk of workouts) activeDates.add(wk.date);
 
   if (activeDates.size === 0) return 0;
 
@@ -146,16 +170,56 @@ export function calculateStreak(
   return streak;
 }
 
+export function calculateDailyBurnedKcal(workouts: WorkoutEntry[], dateKey: string): number {
+  let total = 0;
+  for (const entry of workouts) {
+    if (entry.date === dateKey) {
+      total += Math.max(0, Math.round(entry.caloriesBurned));
+    }
+  }
+  return total;
+}
+
+export function calculateDailyWorkoutBreakdown(workouts: WorkoutEntry[], dateKey: string) {
+  let totalBurned = 0;
+  let walkingBurned = 0;
+  let exerciseBurned = 0;
+  let totalMinutes = 0;
+  let sessionCount = 0;
+
+  for (const entry of workouts) {
+    if (entry.date !== dateKey) continue;
+    const kcal = Math.max(0, Math.round(entry.caloriesBurned));
+    const mins = Math.max(0, Math.round(entry.durationMin));
+    totalBurned += kcal;
+    if (entry.kind === 'treadmill' || entry.kind === 'walking') {
+      walkingBurned += kcal;
+    } else {
+      exerciseBurned += kcal;
+    }
+    totalMinutes += mins;
+    sessionCount += 1;
+  }
+
+  return { totalBurned, walkingBurned, exerciseBurned, totalMinutes, sessionCount };
+}
+
+export function calculateNetCalories(consumedKcal: number, burnedKcal: number): number {
+  return Math.round(consumedKcal) - Math.max(0, Math.round(burnedKcal));
+}
+
 const SHORT_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export function calculateWeeklyOverview(
   meals: MealEntry[],
   waterLogs: WaterEntry[],
   todayKey: string,
-  calorieTarget: number
+  calorieTarget: number,
+  workouts: WorkoutEntry[] = []
 ): WeeklyOverview {
   const days: WeeklyDayStat[] = [];
   let sumCalories = 0;
+  let sumBurnedCalories = 0;
   let sumWaterMl = 0;
   let totalBegovaBowls = 0;
   let daysOnTrack = 0;
@@ -165,6 +229,8 @@ export function calculateWeeklyOverview(
     const dateKey = shiftDateKey(todayKey, offset);
     const localDate = parseDateKeyToLocal(dateKey);
     const totals = calculateDailyTotals(meals, dateKey);
+    const burnedCalories = calculateDailyBurnedKcal(workouts, dateKey);
+    const netCalories = calculateNetCalories(totals.calories, burnedCalories);
     const waterMl = calculateDailyWaterMl(waterLogs, dateKey);
     const begovaCount = meals.filter(
       (m) =>
@@ -180,6 +246,7 @@ export function calculateWeeklyOverview(
       sumCalories += totals.calories;
       loggedDaysCount += 1;
     }
+    sumBurnedCalories += burnedCalories;
     sumWaterMl += waterMl;
     totalBegovaBowls += begovaCount;
     if (onTrack) daysOnTrack += 1;
@@ -189,6 +256,8 @@ export function calculateWeeklyOverview(
       dayShort: SHORT_WEEKDAYS[localDate.getDay()],
       dayNumber: localDate.getDate(),
       calories: totals.calories,
+      burnedCalories,
+      netCalories,
       protein: totals.protein,
       carbs: totals.carbs,
       fat: totals.fat,
@@ -201,6 +270,8 @@ export function calculateWeeklyOverview(
   return {
     days,
     avgCalories: loggedDaysCount > 0 ? Math.round(sumCalories / loggedDaysCount) : 0,
+    avgBurnedCalories: Math.round(sumBurnedCalories / 7),
+    totalBurnedCalories: sumBurnedCalories,
     avgWaterMl: Math.round(sumWaterMl / 7),
     totalBegovaBowls,
     daysOnTrack,
@@ -480,6 +551,246 @@ export function scaleMealMacros(
     protein: Math.max(0, Math.round(meal.protein * safeMultiplier)),
     carbs: Math.max(0, Math.round(meal.carbs * safeMultiplier)),
     fat: Math.max(0, Math.round(meal.fat * safeMultiplier)),
+  };
+}
+
+export interface ParsedTreadmillInput {
+  timeMin: number;
+  speedKmh: number;
+  distanceKm: number;
+}
+
+export function validateTreadmillInput(input: {
+  timeMin: string;
+  speedKmh: string;
+  distanceKm: string;
+}): { valid: boolean; error?: string; parsed?: ParsedTreadmillInput } {
+  const hasTime = input.timeMin.trim() !== '';
+  const hasSpeed = input.speedKmh.trim() !== '';
+  const hasDist = input.distanceKm.trim() !== '';
+
+  const providedCount = Number(hasTime) + Number(hasSpeed) + Number(hasDist);
+  if (providedCount < 2) {
+    return {
+      valid: false,
+      error: 'Enter time, speed, and distance (or any two and the third will calculate automatically).',
+    };
+  }
+
+  let timeMin = hasTime ? Number(input.timeMin) : NaN;
+  let speedKmh = hasSpeed ? Number(input.speedKmh) : NaN;
+  let distanceKm = hasDist ? Number(input.distanceKm) : NaN;
+
+  if ((hasTime && (Number.isNaN(timeMin) || timeMin <= 0)) ||
+      (hasSpeed && (Number.isNaN(speedKmh) || speedKmh <= 0)) ||
+      (hasDist && (Number.isNaN(distanceKm) || distanceKm <= 0))) {
+    return { valid: false, error: 'Time, speed, and distance must all be positive numbers.' };
+  }
+
+  if (!hasDist && hasTime && hasSpeed) {
+    distanceKm = (speedKmh * timeMin) / 60;
+  } else if (!hasTime && hasDist && hasSpeed) {
+    timeMin = (distanceKm / speedKmh) * 60;
+  } else if (!hasSpeed && hasDist && hasTime) {
+    speedKmh = distanceKm / (timeMin / 60);
+  }
+
+  if (timeMin < 1 || timeMin > 360) {
+    return { valid: false, error: 'Treadmill time must be between 1 and 360 minutes.' };
+  }
+  if (speedKmh < 0.5 || speedKmh > 25) {
+    return { valid: false, error: 'Treadmill speed must be between 0.5 and 25 km/h.' };
+  }
+  if (distanceKm < 0.05 || distanceKm > 60) {
+    return { valid: false, error: 'Treadmill distance must be between 0.05 and 60 km.' };
+  }
+
+  return {
+    valid: true,
+    parsed: {
+      timeMin: Math.round(timeMin * 10) / 10,
+      speedKmh: Math.round(speedKmh * 10) / 10,
+      distanceKm: Math.round(distanceKm * 100) / 100,
+    },
+  };
+}
+
+export function validateNormalWalkInput(input: {
+  timeMin: string;
+  pace: WalkPace;
+}): { valid: boolean; error?: string; parsed?: { timeMin: number; pace: WalkPace } } {
+  const timeMin = Number(input.timeMin);
+  if (!input.timeMin.trim() || Number.isNaN(timeMin) || timeMin < 1 || timeMin > 360) {
+    return { valid: false, error: 'Enter walking time between 1 and 360 minutes.' };
+  }
+  const pace: WalkPace = input.pace === 'brisk' ? 'brisk' : 'normal';
+  return {
+    valid: true,
+    parsed: {
+      timeMin: Math.round(timeMin * 10) / 10,
+      pace,
+    },
+  };
+}
+
+export interface ParsedExerciseInput {
+  exerciseName: string;
+  trackingMode: ExerciseTrackingMode;
+  sets?: number;
+  reps?: number;
+  weightKg?: number;
+  durationMin?: number;
+  durationSec?: number;
+  details: string;
+}
+
+export function validateExerciseInput(input: {
+  exerciseName: string;
+  trackingMode: ExerciseTrackingMode;
+  sets: string;
+  reps: string;
+  weightKg: string;
+  timeValue: string;
+  timeUnit: 'min' | 'sec';
+}): { valid: boolean; error?: string; parsed?: ParsedExerciseInput } {
+  const exerciseName = input.exerciseName.trim();
+  if (!exerciseName) {
+    return { valid: false, error: 'Please select or add an exercise first.' };
+  }
+
+  if (input.trackingMode === 'timed') {
+    const rawTime = Number(input.timeValue);
+    if (!input.timeValue.trim() || Number.isNaN(rawTime) || rawTime <= 0) {
+      return { valid: false, error: `Enter how long you did ${exerciseName}.` };
+    }
+    const sets = input.sets.trim() === '' ? 1 : Number(input.sets);
+    if (Number.isNaN(sets) || sets < 1 || sets > 20) {
+      return { valid: false, error: 'Sets/rounds must be between 1 and 20.' };
+    }
+    const roundedSets = Math.round(sets);
+    if (input.timeUnit === 'sec') {
+      if (rawTime < 5 || rawTime > 7200) {
+        return { valid: false, error: 'Duration must be between 5 and 7,200 seconds.' };
+      }
+      const totalSec = Math.round(rawTime * roundedSets);
+      const durationMin = Math.max(0.25, Math.round((totalSec / 60) * 100) / 100);
+      const details =
+        roundedSets > 1
+          ? `${roundedSets} × ${Math.round(rawTime)} sec`
+          : `${Math.round(rawTime)} sec`;
+      return {
+        valid: true,
+        parsed: {
+          exerciseName,
+          trackingMode: 'timed',
+          sets: roundedSets,
+          durationSec: totalSec,
+          durationMin,
+          details,
+        },
+      };
+    }
+
+    if (rawTime < 0.5 || rawTime > 240) {
+      return { valid: false, error: 'Duration must be between 0.5 and 240 minutes.' };
+    }
+    const totalMin = Math.round(rawTime * roundedSets * 10) / 10;
+    const details =
+      roundedSets > 1
+        ? `${roundedSets} × ${Math.round(rawTime * 10) / 10} min`
+        : `${Math.round(rawTime * 10) / 10} min`;
+    return {
+      valid: true,
+      parsed: {
+        exerciseName,
+        trackingMode: 'timed',
+        sets: roundedSets,
+        durationMin: totalMin,
+        durationSec: Math.round(totalMin * 60),
+        details,
+      },
+    };
+  }
+
+  const sets = Number(input.sets);
+  const reps = Number(input.reps);
+  if (!input.sets.trim() || Number.isNaN(sets) || sets < 1 || sets > 30) {
+    return { valid: false, error: 'Enter sets between 1 and 30.' };
+  }
+  if (!input.reps.trim() || Number.isNaN(reps) || reps < 1 || reps > 500) {
+    return { valid: false, error: 'Enter reps between 1 and 500.' };
+  }
+
+  let weightKg: number | undefined;
+  if (input.trackingMode === 'weighted') {
+    const parsedWeight = Number(input.weightKg);
+    if (!input.weightKg.trim() || Number.isNaN(parsedWeight) || parsedWeight < 0.5 || parsedWeight > 500) {
+      return { valid: false, error: 'Enter weight between 0.5 and 500 kg.' };
+    }
+    weightKg = Math.round(parsedWeight * 10) / 10;
+  }
+
+  let durationMin: number | undefined;
+  if (input.timeValue.trim() !== '') {
+    const parsedTime = Number(input.timeValue);
+    if (Number.isNaN(parsedTime) || parsedTime < 0.5 || parsedTime > 240) {
+      return { valid: false, error: 'Optional exercise time must be between 0.5 and 240 minutes.' };
+    }
+    durationMin = Math.round(parsedTime * 10) / 10;
+  }
+
+  const roundedSets = Math.round(sets);
+  const roundedReps = Math.round(reps);
+  const parts = [`${roundedSets} × ${roundedReps}`];
+  if (weightKg !== undefined) parts.push(`${weightKg} kg`);
+  if (durationMin !== undefined) parts.push(`${durationMin} min`);
+
+  return {
+    valid: true,
+    parsed: {
+      exerciseName,
+      trackingMode: input.trackingMode,
+      sets: roundedSets,
+      reps: roundedReps,
+      weightKg,
+      durationMin,
+      details: parts.join(' · '),
+    },
+  };
+}
+
+export interface NormalizedAiWorkoutResult {
+  caloriesBurned: number;
+  estimatedDurationMin: number;
+  intensity: 'light' | 'moderate' | 'vigorous';
+  note: string;
+}
+
+export function normalizeAiWorkoutResult(raw: unknown): NormalizedAiWorkoutResult | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const obj = raw as {
+    caloriesBurned?: unknown;
+    estimatedDurationMin?: unknown;
+    intensity?: unknown;
+    note?: unknown;
+  };
+  const caloriesBurned = Math.round(Number(obj.caloriesBurned));
+  if (Number.isNaN(caloriesBurned) || caloriesBurned <= 0) return null;
+
+  const rawDuration = Number(obj.estimatedDurationMin);
+  const estimatedDurationMin =
+    !Number.isNaN(rawDuration) && rawDuration > 0 ? Math.min(360, Math.max(1, Math.round(rawDuration))) : 10;
+
+  const intensity =
+    obj.intensity === 'light' || obj.intensity === 'vigorous' ? obj.intensity : 'moderate';
+
+  const note = typeof obj.note === 'string' ? obj.note.trim() : '';
+
+  return {
+    caloriesBurned: Math.min(3500, caloriesBurned),
+    estimatedDurationMin,
+    intensity,
+    note,
   };
 }
 

@@ -24,6 +24,8 @@ export function loadAppState(): AppState {
         typeof parsed.darkMode === 'boolean' ? parsed.darkMode : legacyDarkTheme,
       meals: Array.isArray(parsed.meals) ? parsed.meals : fallback.meals,
       waterLogs: Array.isArray(parsed.waterLogs) ? parsed.waterLogs : fallback.waterLogs,
+      workouts: Array.isArray(parsed.workouts) ? parsed.workouts : [],
+      customExercises: Array.isArray(parsed.customExercises) ? parsed.customExercises : [],
       profile: parsed.profile ? { ...fallback.profile, ...parsed.profile } : fallback.profile,
       laurelDismissed: typeof parsed.laurelDismissed === 'boolean' ? parsed.laurelDismissed : false,
       laurelMinimized: typeof parsed.laurelMinimized === 'boolean' ? parsed.laurelMinimized : false,

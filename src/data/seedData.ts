@@ -1,4 +1,34 @@
-import { AppState, LaurelNote, MealEntry, ProfileSettings, WaterEntry } from '../types/tracker';
+import {
+  AppState,
+  ExerciseOption,
+  LaurelNote,
+  MealEntry,
+  ProfileSettings,
+  WaterEntry,
+  WorkoutEntry,
+} from '../types/tracker';
+
+export const DEFAULT_EXERCISES: ExerciseOption[] = [
+  // Weight lifting (sets, reps, weight kg, time)
+  { id: 'ex-goblet-squat', name: 'Goblet Squats', trackingMode: 'weighted', category: 'Strength (Weights)' },
+  { id: 'ex-rdl', name: 'Romanian Deadlift', trackingMode: 'weighted', category: 'Strength (Weights)' },
+  { id: 'ex-db-lunges', name: 'Dumbbell Lunges', trackingMode: 'weighted', category: 'Strength (Weights)' },
+  { id: 'ex-shoulder-press', name: 'Dumbbell Shoulder Press', trackingMode: 'weighted', category: 'Strength (Weights)' },
+  { id: 'ex-bicep-curls', name: 'Dumbbell Bicep Curls', trackingMode: 'weighted', category: 'Strength (Weights)' },
+  { id: 'ex-db-rows', name: 'Dumbbell Rows', trackingMode: 'weighted', category: 'Strength (Weights)' },
+  { id: 'ex-glute-bridge', name: 'Weighted Glute Bridges', trackingMode: 'weighted', category: 'Strength (Weights)' },
+  // Bodyweight reps (sets, reps, time)
+  { id: 'ex-pushups', name: 'Push-ups', trackingMode: 'reps', category: 'Bodyweight' },
+  { id: 'ex-bw-squats', name: 'Bodyweight Squats', trackingMode: 'reps', category: 'Bodyweight' },
+  { id: 'ex-crunches', name: 'Crunches / Sit-ups', trackingMode: 'reps', category: 'Bodyweight' },
+  { id: 'ex-lunges', name: 'Bodyweight Lunges', trackingMode: 'reps', category: 'Bodyweight' },
+  // Timed holds & cardio (time)
+  { id: 'ex-plank', name: 'Plank', trackingMode: 'timed', category: 'Timed & Core', defaultTimeUnit: 'sec' },
+  { id: 'ex-side-plank', name: 'Side Plank', trackingMode: 'timed', category: 'Timed & Core', defaultTimeUnit: 'sec' },
+  { id: 'ex-wall-sit', name: 'Wall Sit', trackingMode: 'timed', category: 'Timed & Core', defaultTimeUnit: 'sec' },
+  { id: 'ex-jump-rope', name: 'Jump Rope', trackingMode: 'timed', category: 'Timed & Core', defaultTimeUnit: 'min' },
+  { id: 'ex-pilates', name: 'Pilates / Yoga Flow', trackingMode: 'timed', category: 'Timed & Core', defaultTimeUnit: 'min' },
+];
 
 export const BEGOVA_CORBA_PRESET = {
   name: 'Begova čorba',
@@ -411,11 +441,58 @@ export function createSeedState(baseDate: Date = new Date()): AppState {
     { id: 'w-d6-1', date: d6, amountMl: 1950, label: 'Daily hydration', time: '18:00' },
   ];
 
+  const workouts: WorkoutEntry[] = [
+    {
+      id: 'wk-d0-1',
+      date: d0,
+      time: '09:15',
+      kind: 'walking',
+      name: 'Brisk Walk',
+      caloriesBurned: 135,
+      durationMin: 25,
+      pace: 'brisk',
+      details: '25 min · Brisk walk',
+      aiNote: 'Estimated for a 25-minute brisk walk (~6.0 km/h) at 64.5 kg.',
+      aiEstimated: true,
+    },
+    {
+      id: 'wk-d1-1',
+      date: d1,
+      time: '17:30',
+      kind: 'treadmill',
+      name: 'Treadmill Walk',
+      caloriesBurned: 185,
+      durationMin: 30,
+      speedKmh: 5.8,
+      distanceKm: 2.9,
+      details: '30 min · 5.8 km/h · 2.9 km',
+      aiNote: 'Estimated for 30 min on treadmill at 5.8 km/h (2.9 km).',
+      aiEstimated: true,
+    },
+    {
+      id: 'wk-d3-1',
+      date: d3,
+      time: '18:05',
+      kind: 'exercise',
+      name: 'Goblet Squats',
+      caloriesBurned: 92,
+      durationMin: 15,
+      sets: 3,
+      reps: 12,
+      weightKg: 10,
+      details: '3 × 12 · 10 kg · 15 min',
+      aiNote: 'Estimated moderate-intensity weighted lower-body strength session.',
+      aiEstimated: true,
+    },
+  ];
+
   return {
     theme: 'unicorn',
     darkMode: false,
     meals,
     waterLogs,
+    workouts,
+    customExercises: [],
     profile: { ...DEFAULT_PROFILE },
     laurelDismissed: false,
     laurelMinimized: false,
@@ -427,7 +504,13 @@ export function createSeedState(baseDate: Date = new Date()): AppState {
 export function createEmptyTrackerState(
   currentState?: Pick<
     AppState,
-    'theme' | 'darkMode' | 'profile' | 'laurelDismissed' | 'laurelMinimized' | 'laurelNoteIndex'
+    | 'theme'
+    | 'darkMode'
+    | 'profile'
+    | 'laurelDismissed'
+    | 'laurelMinimized'
+    | 'laurelNoteIndex'
+    | 'customExercises'
   >
 ): AppState {
   return {
@@ -435,6 +518,10 @@ export function createEmptyTrackerState(
     darkMode: currentState?.darkMode ?? false,
     meals: [],
     waterLogs: [],
+    workouts: [],
+    customExercises: Array.isArray(currentState?.customExercises)
+      ? currentState.customExercises
+      : [],
     profile: currentState?.profile ? { ...currentState.profile } : { ...DEFAULT_PROFILE },
     laurelDismissed: currentState?.laurelDismissed ?? false,
     laurelMinimized: currentState?.laurelMinimized ?? false,

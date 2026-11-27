@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Check, Dumbbell, Pencil, Plus, Trash2, Utensils, X } from 'lucide-react';
 import {
   Area,
   Bar,
@@ -11,18 +12,59 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { DailyTotals, ProfileSettings, WeeklyDayStat, WeeklyOverview } from '../types/tracker';
+import {
+  DailyTotals,
+  MealEntry,
+  MealType,
+  ProfileSettings,
+  WeeklyDayStat,
+  WeeklyOverview,
+  WorkoutEntry,
+} from '../types/tracker';
 import {
   calculateMacroCalorieSplit,
+  calculateNetCalories,
+  calculateProgressPercent,
   formatWaterLiters,
+  getNetCalorieStatus,
+  isEditablePastDate,
   MEAL_TYPES,
   summarizeWeeklyHydration,
 } from '../utils/trackerLogic';
 
 interface StatsPageProps {
+  todayKey: string;
   todayTotals: DailyTotals;
+  todayBurnedKcal: number;
+  todayWorkoutCount: number;
   weeklyOverview: WeeklyOverview;
   profile: ProfileSettings;
+  meals: MealEntry[];
+  workouts: WorkoutEntry[];
+  onUpdateMeal: (
+    id: string,
+    updates: {
+      name: string;
+      mealType: MealType;
+      calories: number;
+      protein: number;
+      carbs: number;
+      fat: number;
+    }
+  ) => void;
+  onDeleteMeal: (id: string) => void;
+  onUpdateWorkout: (
+    id: string,
+    updates: {
+      name: string;
+      caloriesBurned: number;
+      durationMin: number;
+      details?: string;
+    }
+  ) => void;
+  onDeleteWorkout: (id: string) => void;
+  onLogMealsForDate: (dateKey: string) => void;
+  onLogWorkoutsForDate: (dateKey: string) => void;
 }
 
 interface WeeklyTrendDatum extends WeeklyDayStat {
@@ -130,18 +172,166 @@ const WeeklyHydrationTooltip: React.FC<CustomHydrationTooltipProps> = ({ active,
 };
 
 export const StatsPage: React.FC<StatsPageProps> = ({
+  todayKey,
   todayTotals,
+  todayBurnedKcal,
+  todayWorkoutCount,
   weeklyOverview,
   profile,
+  meals,
+  workouts,
+  onUpdateMeal,
+  onDeleteMeal,
+  onUpdateWorkout,
+  onDeleteWorkout,
+  onLogMealsForDate,
+  onLogWorkoutsForDate,
 }) => {
   const [selectedDayIndex, setSelectedDayIndex] = useState<number>(
     weeklyOverview.days.length - 1
   );
+  const [yesterdayEditorOpen, setYesterdayEditorOpen] = useState(false);
+  const [editorTab, setEditorTab] = useState<'meals' | 'workouts'>('meals');
+
+  // Inline meal edit state
+  const [editingMealId, setEditingMealId] = useState<string | null>(null);
+  const [editMealName, setEditMealName] = useState('');
+  const [editMealType, setEditMealType] = useState<MealType>('lunch');
+  const [editMealKcal, setEditMealKcal] = useState('');
+  const [editMealP, setEditMealP] = useState('');
+  const [editMealC, setEditMealC] = useState('');
+  const [editMealF, setEditMealF] = useState('');
+  const [editError, setEditError] = useState<string | null>(null);
+
+  // Inline workout edit state
+  const [editingWorkoutId, setEditingWorkoutId] = useState<string | null>(null);
+  const [editWkName, setEditWkName] = useState('');
+  const [editWkKcal, setEditWkKcal] = useState('');
+  const [editWkDuration, setEditWkDuration] = useState('');
 
   const selectedDay =
     weeklyOverview.days[selectedDayIndex] ?? weeklyOverview.days[weeklyOverview.days.length - 1];
 
+  const selectedDayIsEditable = Boolean(
+    selectedDay && isEditablePastDate(selectedDay.date, todayKey)
+  );
+
+  const selectedDayMeals = useMemo(
+    () => (selectedDay ? meals.filter((m) => m.date === selectedDay.date) : []),
+    [meals, selectedDay]
+  );
+
+  const selectedDayWorkouts = useMemo(
+    () => (selectedDay ? workouts.filter((w) => w.date === selectedDay.date) : []),
+    [workouts, selectedDay]
+  );
+
+  const handleSelectDay = (idx: number) => {
+    const picked = weeklyOverview.days[idx];
+    setSelectedDayIndex(idx);
+    setEditingMealId(null);
+    setEditingWorkoutId(null);
+    setEditError(null);
+    if (picked && isEditablePastDate(picked.date, todayKey)) {
+      setYesterdayEditorOpen(true);
+    } else {
+      setYesterdayEditorOpen(false);
+    }
+  };
+
+  const startEditingMeal = (meal: MealEntry) => {
+    setEditingMealId(meal.id);
+    setEditMealName(meal.name);
+    setEditMealType(meal.mealType);
+    setEditMealKcal(String(meal.calories));
+    setEditMealP(String(meal.protein));
+    setEditMealC(String(meal.carbs));
+    setEditMealF(String(meal.fat));
+    setEditError(null);
+  };
+
+  const saveMealEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMealId) return;
+    const trimmed = editMealName.trim();
+    const kcal = Number(editMealKcal);
+    const p = editMealP.trim() === '' ? 0 : Number(editMealP);
+    const c = editMealC.trim() === '' ? 0 : Number(editMealC);
+    const f = editMealF.trim() === '' ? 0 : Number(editMealF);
+    if (trimmed.length < 2) {
+      setEditError('Enter a meal name (at least 2 characters).');
+      return;
+    }
+    if (Number.isNaN(kcal) || kcal < 0 || kcal > 5000) {
+      setEditError('Calories must be between 0 and 5,000 kcal.');
+      return;
+    }
+    if (Number.isNaN(p) || p < 0 || Number.isNaN(c) || c < 0 || Number.isNaN(f) || f < 0) {
+      setEditError('Macros cannot be negative.');
+      return;
+    }
+    onUpdateMeal(editingMealId, {
+      name: trimmed,
+      mealType: editMealType,
+      calories: kcal,
+      protein: p,
+      carbs: c,
+      fat: f,
+    });
+    setEditingMealId(null);
+    setEditError(null);
+  };
+
+  const startEditingWorkout = (wk: WorkoutEntry) => {
+    setEditingWorkoutId(wk.id);
+    setEditWkName(wk.name);
+    setEditWkKcal(String(wk.caloriesBurned));
+    setEditWkDuration(String(wk.durationMin));
+    setEditError(null);
+  };
+
+  const saveWorkoutEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingWorkoutId) return;
+    const trimmed = editWkName.trim();
+    const kcal = Number(editWkKcal);
+    const dur = Number(editWkDuration);
+    if (trimmed.length < 2) {
+      setEditError('Enter a workout name (at least 2 characters).');
+      return;
+    }
+    if (Number.isNaN(kcal) || kcal < 1 || kcal > 4000) {
+      setEditError('Calories burnt must be between 1 and 4,000 kcal.');
+      return;
+    }
+    if (Number.isNaN(dur) || dur < 1 || dur > 480) {
+      setEditError('Duration must be between 1 and 480 minutes.');
+      return;
+    }
+    onUpdateWorkout(editingWorkoutId, {
+      name: trimmed,
+      caloriesBurned: kcal,
+      durationMin: dur,
+    });
+    setEditingWorkoutId(null);
+    setEditError(null);
+  };
+
   const macroSplit = calculateMacroCalorieSplit(todayTotals);
+
+  // Net Calorie Intake circle math (Food Intake - Calories Burnt)
+  const netCalories = calculateNetCalories(todayTotals.calories, todayBurnedKcal);
+  const netRemaining = profile.dailyCalorieTarget - netCalories;
+  const netStatus = getNetCalorieStatus(netCalories, profile.dailyCalorieTarget);
+  const netOverGoal = netStatus === 'over';
+  const netGoalPct = calculateProgressPercent(Math.max(0, netCalories), profile.dailyCalorieTarget);
+  const netRingRadius = 64;
+  const netRingCirc = 2 * Math.PI * netRingRadius;
+  const netClampedRatio = Math.min(
+    1,
+    Math.max(0, netCalories / Math.max(1, profile.dailyCalorieTarget))
+  );
+  const netRingOffset = netRingCirc * (1 - netClampedRatio);
 
   // Donut segments for today's macro calorie split
   const donutRadius = 58;
@@ -218,9 +408,143 @@ export const StatsPage: React.FC<StatsPageProps> = ({
           Nutrition & Weekly Stats
         </h1>
         <p className="mt-1 text-sm" style={{ color: 'var(--ink-secondary)' }}>
-          Daily calorie and macro breakdown alongside your 7-day intake trend vs goal.
+          Net calorie balance, daily macro breakdown, and 7-day nutrition &amp; hydration trends.
         </p>
       </div>
+
+      {/* FIRST RECTANGLE: Net Calorie Intake Circle */}
+      <section
+        aria-label="Net calorie intake"
+        data-testid="stats-net-calorie-card"
+        className="glass-panel rounded-3xl p-6"
+      >
+        <div className="flex flex-col items-center gap-6 md:flex-row md:justify-between">
+          <div className="flex flex-col items-center gap-5 sm:flex-row">
+            {/* Net Calorie Circle Ring — Green when in range, Red when over daily limit */}
+            <div className="relative flex h-44 w-44 shrink-0 items-center justify-center">
+              <svg
+                viewBox="0 0 160 160"
+                className="h-full w-full -rotate-90"
+                aria-hidden="true"
+                data-testid="stats-net-calorie-ring"
+                data-status={netStatus}
+              >
+                <circle
+                  cx="80"
+                  cy="80"
+                  r={netRingRadius}
+                  fill="none"
+                  stroke={netOverGoal ? 'var(--danger-soft)' : 'var(--success-soft)'}
+                  strokeWidth="14"
+                />
+                <circle
+                  cx="80"
+                  cy="80"
+                  r={netRingRadius}
+                  fill="none"
+                  stroke={netOverGoal ? 'var(--danger-ring)' : 'var(--success-ring)'}
+                  strokeWidth="14"
+                  strokeLinecap="round"
+                  strokeDasharray={netRingCirc}
+                  strokeDashoffset={netRingOffset}
+                  className="transition-[stroke-dashoffset,stroke] duration-500 ease-out"
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-3">
+                <span
+                  data-testid="stats-net-calories-value"
+                  className="font-tabular text-3xl font-semibold tracking-tight leading-none"
+                  style={{ color: 'var(--ink-primary)' }}
+                >
+                  {netCalories.toLocaleString('en-US')}
+                </span>
+                <span className="mt-1 text-xs font-medium" style={{ color: 'var(--ink-muted)' }}>
+                  kcal net
+                </span>
+                <span
+                  data-testid="stats-net-status-label"
+                  className="font-tabular mt-1 text-[11px] font-semibold"
+                  style={{ color: netOverGoal ? 'var(--danger-ink)' : 'var(--success-ink)' }}
+                >
+                  {netOverGoal
+                    ? `+${Math.abs(netRemaining).toLocaleString('en-US')} over`
+                    : `${netRemaining.toLocaleString('en-US')} left`}
+                </span>
+              </div>
+            </div>
+
+            <div className="text-center sm:text-left">
+              <h2 className="font-display text-xl font-bold" style={{ color: 'var(--ink-primary)' }}>
+                Net Calorie Intake
+              </h2>
+              <p className="mt-1 text-xs leading-relaxed max-w-md" style={{ color: 'var(--ink-secondary)' }}>
+                Today&apos;s food intake minus workout calories burnt against your{' '}
+                <span className="font-tabular font-semibold">
+                  {profile.dailyCalorieTarget.toLocaleString('en-US')} kcal
+                </span>{' '}
+                daily limit ({netGoalPct}% ·{' '}
+                <span
+                  className="font-semibold"
+                  style={{ color: netOverGoal ? 'var(--danger-ink)' : 'var(--success-ink)' }}
+                >
+                  {netOverGoal ? 'over limit' : 'in range'}
+                </span>
+                ).
+              </p>
+              <p className="font-tabular mt-2 text-xs" style={{ color: 'var(--ink-muted)' }}>
+                {todayWorkoutCount === 0
+                  ? 'No workouts logged today yet'
+                  : `${todayWorkoutCount} workout ${todayWorkoutCount === 1 ? 'session' : 'sessions'} logged today`}
+              </p>
+            </div>
+          </div>
+
+          {/* Clean Unboxed Energy Equation Readout */}
+          <div
+            className="grid w-full grid-cols-3 divide-x divide-black/6 dark:divide-white/10 border-t pt-4 md:w-auto md:min-w-[21rem] md:border-t-0 md:border-l md:pt-0 md:pl-6"
+            style={{ borderColor: 'var(--divider-hairline)' }}
+          >
+            <div className="px-3 first:pl-0 text-center md:text-left">
+              <p className="text-[11px] font-medium" style={{ color: 'var(--ink-muted)' }}>
+                Food Intake
+              </p>
+              <p className="font-tabular mt-1 text-lg font-semibold" style={{ color: 'var(--ink-primary)' }}>
+                {todayTotals.calories.toLocaleString('en-US')}
+              </p>
+              <p className="text-[11px]" style={{ color: 'var(--ink-muted)' }}>
+                kcal
+              </p>
+            </div>
+
+            <div className="px-3 text-center md:text-left">
+              <p className="text-[11px] font-medium" style={{ color: 'var(--ink-muted)' }}>
+                Burned
+              </p>
+              <p className="font-tabular mt-1 text-lg font-semibold" style={{ color: 'var(--burn-ink)' }}>
+                −{todayBurnedKcal.toLocaleString('en-US')}
+              </p>
+              <p className="text-[11px]" style={{ color: 'var(--ink-muted)' }}>
+                kcal
+              </p>
+            </div>
+
+            <div className="px-3 last:pr-0 text-center md:text-left">
+              <p className="text-[11px] font-medium" style={{ color: 'var(--ink-muted)' }}>
+                Net Intake
+              </p>
+              <p
+                className="font-tabular mt-1 text-lg font-semibold"
+                style={{ color: netOverGoal ? 'var(--danger-ink)' : 'var(--success-ink)' }}
+              >
+                {netCalories.toLocaleString('en-US')}
+              </p>
+              <p className="text-[11px]" style={{ color: 'var(--ink-muted)' }}>
+                kcal
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* 4-Column Weekly KPI Strip (Clean hairline dividers, single elevation) */}
       <section
@@ -473,7 +797,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({
                       ? state.activeTooltipIndex
                       : Number(state?.activeTooltipIndex);
                   if (!Number.isNaN(idx) && idx >= 0 && idx < chartData.length) {
-                    setSelectedDayIndex(idx);
+                    handleSelectDay(idx);
                   }
                 }}
               >
@@ -536,7 +860,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({
                   radius={[8, 8, 2, 2]}
                   isAnimationActive={false}
                   onClick={(_data, idx) => {
-                    if (typeof idx === 'number') setSelectedDayIndex(idx);
+                    if (typeof idx === 'number') handleSelectDay(idx);
                   }}
                 >
                   {chartData.map((entry, idx) => {
@@ -581,7 +905,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({
                         stroke="var(--accent-primary)"
                         strokeWidth={2}
                         className="cursor-pointer"
-                        onClick={() => setSelectedDayIndex(index)}
+                        onClick={() => handleSelectDay(index)}
                       />
                     );
                   }}
@@ -596,25 +920,47 @@ export const StatsPage: React.FC<StatsPageProps> = ({
             </ResponsiveContainer>
           </div>
 
-          {/* Quick Day Selector Chips */}
+          {/* Quick Day Selector Chips — Yesterday (1 day before today) shows small pencil icon while editable */}
           <div className="mt-3 grid grid-cols-7 gap-1.5" role="group" aria-label="Select a day to inspect">
             {chartData.map((day, idx) => {
               const selected = idx === selectedDayIndex;
+              const isEditable = isEditablePastDate(day.date, todayKey);
               return (
                 <button
                   key={`day-select-${day.date}`}
                   type="button"
-                  onClick={() => setSelectedDayIndex(idx)}
+                  data-testid={isEditable ? 'stats-editable-date-chip' : `stats-date-chip-${idx}`}
+                  onClick={() => handleSelectDay(idx)}
                   aria-pressed={selected}
+                  title={
+                    isEditable
+                      ? `Click to edit ${day.dayShort}, ${day.date.slice(5)} meals or workouts`
+                      : `Inspect ${day.dayShort}, ${day.date.slice(5)}`
+                  }
                   className={`${
                     selected ? 'glass-block-active' : 'glass-block'
-                  } rounded-xl px-1 py-1.5 text-center transition-all cursor-pointer`}
+                  } relative rounded-xl px-1 py-1.5 text-center transition-all cursor-pointer`}
                 >
+                  {isEditable && (
+                    <Pencil
+                      data-testid="stats-date-pencil-icon"
+                      className="absolute top-1 right-1 h-2.5 w-2.5 shrink-0 sm:hidden"
+                      style={{ color: 'var(--accent-primary)' }}
+                      aria-label="Editable date"
+                    />
+                  )}
                   <span
-                    className="block text-[11px] font-semibold"
+                    className="inline-flex items-center justify-center gap-0.5 text-[11px] font-semibold"
                     style={{ color: selected ? 'var(--accent-primary)' : 'var(--ink-secondary)' }}
                   >
                     {day.dayShort}
+                    {isEditable && (
+                      <Pencil
+                        className="hidden h-2.5 w-2.5 shrink-0 sm:inline-block"
+                        style={{ color: 'var(--accent-primary)' }}
+                        aria-hidden="true"
+                      />
+                    )}
                   </span>
                   <span
                     className="font-tabular block text-[10px]"
@@ -637,30 +983,47 @@ export const StatsPage: React.FC<StatsPageProps> = ({
                 <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>
                   Selected Day
                 </p>
-                <p className="font-display mt-0.5 text-base font-bold" style={{ color: 'var(--ink-primary)' }}>
-                  {selectedDay.dayShort}, {selectedDay.date.slice(5)}
-                </p>
+                {selectedDayIsEditable ? (
+                  <button
+                    type="button"
+                    data-testid="stats-selected-date-edit-btn"
+                    onClick={() => setYesterdayEditorOpen((prev) => !prev)}
+                    aria-expanded={yesterdayEditorOpen}
+                    className="font-display mt-0.5 inline-flex items-center gap-1.5 rounded-lg text-base font-bold transition-opacity hover:opacity-80 cursor-pointer"
+                    style={{ color: 'var(--accent-primary)' }}
+                    title="Edit yesterday's meals or workouts"
+                  >
+                    {selectedDay.dayShort}, {selectedDay.date.slice(5)}
+                    <Pencil className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  </button>
+                ) : (
+                  <p className="font-display mt-0.5 text-base font-bold" style={{ color: 'var(--ink-primary)' }}>
+                    {selectedDay.dayShort}, {selectedDay.date.slice(5)}
+                  </p>
+                )}
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>
-                  Energy vs Goal
+                  Energy &amp; Net
                 </p>
                 <p className="font-tabular mt-0.5 text-base font-semibold" style={{ color: 'var(--ink-primary)' }}>
                   {selectedDay.calories.toLocaleString('en-US')} kcal
                 </p>
-                <p className="font-tabular text-[11px]" style={{ color: 'var(--ink-muted)' }}>
-                  {selectedDay.calories === 0
+                <p className="font-tabular text-[11px] leading-snug" style={{ color: 'var(--ink-muted)' }}>
+                  {selectedDay.burnedCalories > 0
+                    ? `−${selectedDay.burnedCalories} burnt · ${selectedDay.netCalories} net`
+                    : selectedDay.calories === 0
                     ? `${profile.dailyCalorieTarget.toLocaleString('en-US')} left`
                     : selectedDay.calories > profile.dailyCalorieTarget
                     ? `+${(selectedDay.calories - profile.dailyCalorieTarget).toLocaleString('en-US')} over`
                     : `${(profile.dailyCalorieTarget - selectedDay.calories).toLocaleString('en-US')} under`}
                 </p>
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>
                   Macros (P / C / F)
                 </p>
-                <p className="font-tabular mt-0.5 text-sm font-semibold" style={{ color: 'var(--ink-secondary)' }}>
+                <p className="font-tabular mt-0.5 text-sm font-semibold leading-snug" style={{ color: 'var(--ink-secondary)' }}>
                   {selectedDay.protein}g / {selectedDay.carbs}g / {selectedDay.fat}g
                 </p>
               </div>
@@ -672,6 +1035,379 @@ export const StatsPage: React.FC<StatsPageProps> = ({
                   {formatWaterLiters(selectedDay.waterMl)}
                 </p>
               </div>
+            </div>
+          )}
+
+          {/* Inline Yesterday Editor (only available for 1 day before today) */}
+          {selectedDay && selectedDayIsEditable && yesterdayEditorOpen && (
+            <div
+              data-testid="stats-yesterday-editor"
+              className="mt-5 border-t pt-5"
+              style={{ borderColor: 'var(--divider-hairline)' }}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className="font-display text-sm font-bold" style={{ color: 'var(--ink-primary)' }}>
+                    Edit Yesterday ({selectedDay.dayShort}, {selectedDay.date.slice(5)})
+                  </h3>
+                  <p className="text-[11px]" style={{ color: 'var(--ink-muted)' }}>
+                    Update or log meals and workouts for 1 day before today.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div
+                    role="tablist"
+                    aria-label="Edit yesterday category"
+                    className="glass-block inline-flex items-center gap-1 rounded-xl p-1"
+                  >
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={editorTab === 'meals'}
+                      onClick={() => {
+                        setEditorTab('meals');
+                        setEditError(null);
+                      }}
+                      className={`inline-flex min-h-[32px] items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap ${
+                        editorTab === 'meals' ? 'glass-block-active' : ''
+                      }`}
+                      style={{
+                        color: editorTab === 'meals' ? 'var(--accent-primary)' : 'var(--ink-secondary)',
+                      }}
+                    >
+                      <Utensils className="h-3.5 w-3.5" aria-hidden="true" />
+                      Meals ({selectedDayMeals.length})
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={editorTab === 'workouts'}
+                      onClick={() => {
+                        setEditorTab('workouts');
+                        setEditError(null);
+                      }}
+                      className={`inline-flex min-h-[32px] items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap ${
+                        editorTab === 'workouts' ? 'glass-block-active' : ''
+                      }`}
+                      style={{
+                        color: editorTab === 'workouts' ? 'var(--accent-primary)' : 'var(--ink-secondary)',
+                      }}
+                    >
+                      <Dumbbell className="h-3.5 w-3.5" aria-hidden="true" />
+                      Workouts ({selectedDayWorkouts.length})
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setYesterdayEditorOpen(false)}
+                    aria-label="Close yesterday editor"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
+                    style={{ color: 'var(--ink-muted)' }}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              {editError && (
+                <p role="alert" className="mt-3 text-xs font-semibold" style={{ color: 'var(--danger-ink)' }}>
+                  {editError}
+                </p>
+              )}
+
+              {editorTab === 'meals' ? (
+                <div className="mt-4 space-y-3">
+                  <div className="divide-y divide-black/6 dark:divide-white/10">
+                    {selectedDayMeals.length === 0 ? (
+                      <p className="py-4 text-center text-xs" style={{ color: 'var(--ink-muted)' }}>
+                        No meals logged for yesterday yet.
+                      </p>
+                    ) : (
+                      selectedDayMeals.map((meal) =>
+                        editingMealId === meal.id ? (
+                          <form
+                            key={meal.id}
+                            onSubmit={saveMealEdit}
+                            className="py-3 space-y-2.5"
+                          >
+                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-12">
+                              <input
+                                type="text"
+                                aria-label="Meal name"
+                                value={editMealName}
+                                onChange={(e) => setEditMealName(e.target.value)}
+                                className="glass-block sm:col-span-7 min-h-[38px] rounded-xl px-3 py-1.5 text-xs outline-none"
+                                style={{ color: 'var(--ink-primary)' }}
+                              />
+                              <select
+                                aria-label="Meal type"
+                                value={editMealType}
+                                onChange={(e) => setEditMealType(e.target.value as MealType)}
+                                className="glass-block sm:col-span-5 min-h-[38px] rounded-xl px-3 py-1.5 text-xs outline-none"
+                                style={{ color: 'var(--ink-primary)' }}
+                              >
+                                {MEAL_TYPES.map((mt) => (
+                                  <option key={mt.id} value={mt.id}>
+                                    {mt.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="grid grid-cols-4 gap-2">
+                              <div>
+                                <label className="block text-[10px] font-semibold" style={{ color: 'var(--ink-muted)' }}>
+                                  kcal
+                                </label>
+                                <input
+                                  type="number"
+                                  aria-label="Meal calories"
+                                  value={editMealKcal}
+                                  onChange={(e) => setEditMealKcal(e.target.value)}
+                                  className="font-tabular glass-block mt-0.5 w-full min-h-[36px] rounded-lg px-2.5 py-1 text-xs outline-none"
+                                  style={{ color: 'var(--ink-primary)' }}
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-semibold" style={{ color: 'var(--ink-muted)' }}>
+                                  Protein (g)
+                                </label>
+                                <input
+                                  type="number"
+                                  aria-label="Meal protein"
+                                  value={editMealP}
+                                  onChange={(e) => setEditMealP(e.target.value)}
+                                  className="font-tabular glass-block mt-0.5 w-full min-h-[36px] rounded-lg px-2.5 py-1 text-xs outline-none"
+                                  style={{ color: 'var(--ink-primary)' }}
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-semibold" style={{ color: 'var(--ink-muted)' }}>
+                                  Carbs (g)
+                                </label>
+                                <input
+                                  type="number"
+                                  aria-label="Meal carbs"
+                                  value={editMealC}
+                                  onChange={(e) => setEditMealC(e.target.value)}
+                                  className="font-tabular glass-block mt-0.5 w-full min-h-[36px] rounded-lg px-2.5 py-1 text-xs outline-none"
+                                  style={{ color: 'var(--ink-primary)' }}
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-semibold" style={{ color: 'var(--ink-muted)' }}>
+                                  Fat (g)
+                                </label>
+                                <input
+                                  type="number"
+                                  aria-label="Meal fat"
+                                  value={editMealF}
+                                  onChange={(e) => setEditMealF(e.target.value)}
+                                  className="font-tabular glass-block mt-0.5 w-full min-h-[36px] rounded-lg px-2.5 py-1 text-xs outline-none"
+                                  style={{ color: 'var(--ink-primary)' }}
+                                />
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingMealId(null);
+                                  setEditError(null);
+                                }}
+                                className="min-h-[34px] rounded-lg px-3 py-1 text-xs font-semibold hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
+                                style={{ color: 'var(--ink-secondary)' }}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="submit"
+                                className="btn-theme-gradient inline-flex min-h-[34px] items-center gap-1 rounded-lg px-3.5 py-1 text-xs font-semibold cursor-pointer"
+                              >
+                                <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                                Save
+                              </button>
+                            </div>
+                          </form>
+                        ) : (
+                          <div key={meal.id} className="flex items-center justify-between gap-3 py-2.5">
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-xs font-semibold" style={{ color: 'var(--ink-primary)' }}>
+                                {meal.name}
+                              </p>
+                              <p className="font-tabular text-[11px]" style={{ color: 'var(--ink-muted)' }}>
+                                {meal.mealType} · {meal.time} · {meal.protein}g P / {meal.carbs}g C / {meal.fat}g F
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span className="font-tabular text-xs font-semibold" style={{ color: 'var(--ink-primary)' }}>
+                                {meal.calories} kcal
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => startEditingMeal(meal)}
+                                aria-label={`Edit ${meal.name}`}
+                                className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
+                                style={{ color: 'var(--accent-primary)' }}
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => onDeleteMeal(meal.id)}
+                                aria-label={`Delete ${meal.name}`}
+                                className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/50 dark:hover:text-red-400 cursor-pointer"
+                                style={{ color: 'var(--ink-muted)' }}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      )
+                    )}
+                  </div>
+
+                  <div className="flex justify-end pt-1">
+                    <button
+                      type="button"
+                      onClick={() => onLogMealsForDate(selectedDay.date)}
+                      className="btn-theme-gradient inline-flex min-h-[38px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold cursor-pointer whitespace-nowrap"
+                    >
+                      <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                      Log Meal for Yesterday
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-4 space-y-3">
+                  <div className="divide-y divide-black/6 dark:divide-white/10">
+                    {selectedDayWorkouts.length === 0 ? (
+                      <p className="py-4 text-center text-xs" style={{ color: 'var(--ink-muted)' }}>
+                        No workouts logged for yesterday yet.
+                      </p>
+                    ) : (
+                      selectedDayWorkouts.map((wk) =>
+                        editingWorkoutId === wk.id ? (
+                          <form
+                            key={wk.id}
+                            onSubmit={saveWorkoutEdit}
+                            className="py-3 space-y-2.5"
+                          >
+                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-12">
+                              <div className="sm:col-span-6">
+                                <label className="block text-[10px] font-semibold" style={{ color: 'var(--ink-muted)' }}>
+                                  Workout name
+                                </label>
+                                <input
+                                  type="text"
+                                  aria-label="Workout name"
+                                  value={editWkName}
+                                  onChange={(e) => setEditWkName(e.target.value)}
+                                  className="glass-block mt-0.5 w-full min-h-[36px] rounded-lg px-2.5 py-1 text-xs outline-none"
+                                  style={{ color: 'var(--ink-primary)' }}
+                                />
+                              </div>
+                              <div className="sm:col-span-3">
+                                <label className="block text-[10px] font-semibold" style={{ color: 'var(--ink-muted)' }}>
+                                  Burnt (kcal)
+                                </label>
+                                <input
+                                  type="number"
+                                  aria-label="Calories burnt"
+                                  value={editWkKcal}
+                                  onChange={(e) => setEditWkKcal(e.target.value)}
+                                  className="font-tabular glass-block mt-0.5 w-full min-h-[36px] rounded-lg px-2.5 py-1 text-xs outline-none"
+                                  style={{ color: 'var(--ink-primary)' }}
+                                />
+                              </div>
+                              <div className="sm:col-span-3">
+                                <label className="block text-[10px] font-semibold" style={{ color: 'var(--ink-muted)' }}>
+                                  Time (min)
+                                </label>
+                                <input
+                                  type="number"
+                                  aria-label="Workout duration"
+                                  value={editWkDuration}
+                                  onChange={(e) => setEditWkDuration(e.target.value)}
+                                  className="font-tabular glass-block mt-0.5 w-full min-h-[36px] rounded-lg px-2.5 py-1 text-xs outline-none"
+                                  style={{ color: 'var(--ink-primary)' }}
+                                />
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingWorkoutId(null);
+                                  setEditError(null);
+                                }}
+                                className="min-h-[34px] rounded-lg px-3 py-1 text-xs font-semibold hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
+                                style={{ color: 'var(--ink-secondary)' }}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="submit"
+                                className="btn-theme-gradient inline-flex min-h-[34px] items-center gap-1 rounded-lg px-3.5 py-1 text-xs font-semibold cursor-pointer"
+                              >
+                                <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                                Save
+                              </button>
+                            </div>
+                          </form>
+                        ) : (
+                          <div key={wk.id} className="flex items-center justify-between gap-3 py-2.5">
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-xs font-semibold" style={{ color: 'var(--ink-primary)' }}>
+                                {wk.name}
+                              </p>
+                              <p className="font-tabular text-[11px]" style={{ color: 'var(--ink-muted)' }}>
+                                {wk.time} · {wk.details}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span className="font-tabular text-xs font-semibold" style={{ color: 'var(--burn-ink)' }}>
+                                −{wk.caloriesBurned} kcal
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => startEditingWorkout(wk)}
+                                aria-label={`Edit ${wk.name}`}
+                                className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
+                                style={{ color: 'var(--accent-primary)' }}
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => onDeleteWorkout(wk.id)}
+                                aria-label={`Delete ${wk.name}`}
+                                className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/50 dark:hover:text-red-400 cursor-pointer"
+                                style={{ color: 'var(--ink-muted)' }}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      )
+                    )}
+                  </div>
+
+                  <div className="flex justify-end pt-1">
+                    <button
+                      type="button"
+                      onClick={() => onLogWorkoutsForDate(selectedDay.date)}
+                      className="btn-theme-gradient inline-flex min-h-[38px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold cursor-pointer whitespace-nowrap"
+                    >
+                      <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                      Log Workout for Yesterday
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </section>

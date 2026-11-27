@@ -1,22 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  calculateDailyBurnedKcal,
   calculateDailyTotals,
   calculateDailyWaterMl,
+  calculateDailyWorkoutBreakdown,
   calculateMacroCalorieSplit,
+  calculateNetCalories,
   calculateStreak,
   calculateWeeklyOverview,
   clampBubblePosition,
   detectCalorieMilestone,
   detectWaterMilestone,
   formatWaterLiters,
+  getNetCalorieStatus,
+  isEditablePastDate,
   normalizeAiMealItems,
+  normalizeAiWorkoutResult,
   scaleMealMacros,
   summarizeWeeklyHydration,
+  validateExerciseInput,
   validateMealForm,
+  validateNormalWalkInput,
   validateProfileForm,
+  validateTreadmillInput,
 } from './trackerLogic';
-import { MealEntry, WaterEntry } from '../types/tracker';
+import { MealEntry, WaterEntry, WorkoutEntry } from '../types/tracker';
 import {
   isStaticPagesHost,
   resolveClientGeminiApiKey,
@@ -272,5 +281,158 @@ test('summarizeWeeklyHydration computes goal-met days, averages, and Y-axis ceil
   assert.equal(emptySummary.avgWaterMl, 0);
   assert.equal(emptySummary.yAxisMaxMl, 3000);
 });
+
+test('workout burn totals, net calorie intake, and streak include workout sessions accurately', () => {
+  const sampleWorkouts: WorkoutEntry[] = [
+    {
+      id: 'wk-1',
+      date: '2026-11-25',
+      time: '09:00',
+      kind: 'treadmill',
+      name: 'Treadmill Walk',
+      caloriesBurned: 180,
+      durationMin: 30,
+      details: '30 min · 6 km/h · 3 km',
+    },
+    {
+      id: 'wk-2',
+      date: '2026-11-25',
+      time: '18:00',
+      kind: 'exercise',
+      name: 'Goblet Squats',
+      caloriesBurned: 95,
+      durationMin: 15,
+      details: '3 × 12 · 10 kg · 15 min',
+    },
+    {
+      id: 'wk-3',
+      date: '2026-11-22',
+      time: '17:00',
+      kind: 'walking',
+      name: 'Brisk Walk',
+      caloriesBurned: 120,
+      durationMin: 25,
+      details: '25 min · Brisk walk',
+    },
+  ];
+
+  assert.equal(calculateDailyBurnedKcal(sampleWorkouts, '2026-11-25'), 275);
+  const breakdown = calculateDailyWorkoutBreakdown(sampleWorkouts, '2026-11-25');
+  assert.equal(breakdown.totalBurned, 275);
+  assert.equal(breakdown.walkingBurned, 180);
+  assert.equal(breakdown.exerciseBurned, 95);
+  assert.equal(breakdown.totalMinutes, 45);
+  assert.equal(breakdown.sessionCount, 2);
+
+  assert.equal(calculateNetCalories(1450, 275), 1175);
+  assert.equal(calculateNetCalories(100, 250), -150);
+
+  // Streak extends to 4 days via wk-3 on 2026-11-22
+  assert.equal(calculateStreak(sampleMeals, sampleWater, '2026-11-25', sampleWorkouts), 4);
+
+  const overview = calculateWeeklyOverview(sampleMeals, sampleWater, '2026-11-25', 1850, sampleWorkouts);
+  assert.equal(overview.days[6].burnedCalories, 275);
+  assert.equal(overview.days[6].netCalories, 640 - 275);
+  assert.equal(overview.totalBurnedCalories, 395);
+});
+
+test('validateTreadmillInput and validateNormalWalkInput validate metrics and auto-derive missing third field', () => {
+  const autoDist = validateTreadmillInput({ timeMin: '30', speedKmh: '6', distanceKm: '' });
+  assert.equal(autoDist.valid, true);
+  assert.equal(autoDist.parsed?.distanceKm, 3);
+
+  const allThree = validateTreadmillInput({ timeMin: '45', speedKmh: '5.6', distanceKm: '4.2' });
+  assert.equal(allThree.valid, true);
+  assert.equal(allThree.parsed?.timeMin, 45);
+
+  assert.equal(validateTreadmillInput({ timeMin: '30', speedKmh: '', distanceKm: '' }).valid, false);
+  assert.equal(validateTreadmillInput({ timeMin: '-5', speedKmh: '6', distanceKm: '3' }).valid, false);
+
+  const walkOk = validateNormalWalkInput({ timeMin: '25', pace: 'brisk' });
+  assert.equal(walkOk.valid, true);
+  assert.equal(walkOk.parsed?.pace, 'brisk');
+  assert.equal(validateNormalWalkInput({ timeMin: '0', pace: 'normal' }).valid, false);
+});
+
+test('validateExerciseInput supports weighted strength exercises and timed holds like Plank', () => {
+  const weighted = validateExerciseInput({
+    exerciseName: 'Goblet Squats',
+    trackingMode: 'weighted',
+    sets: '3',
+    reps: '12',
+    weightKg: '12.5',
+    timeValue: '12',
+    timeUnit: 'min',
+  });
+  assert.equal(weighted.valid, true);
+  assert.equal(weighted.parsed?.weightKg, 12.5);
+  assert.equal(weighted.parsed?.details, '3 × 12 · 12.5 kg · 12 min');
+
+  // Weighted exercise requires weight
+  assert.equal(
+    validateExerciseInput({
+      exerciseName: 'Goblet Squats',
+      trackingMode: 'weighted',
+      sets: '3',
+      reps: '12',
+      weightKg: '',
+      timeValue: '',
+      timeUnit: 'min',
+    }).valid,
+    false
+  );
+
+  // Timed exercise (Plank) tracks time in seconds/minutes
+  const plank = validateExerciseInput({
+    exerciseName: 'Plank',
+    trackingMode: 'timed',
+    sets: '2',
+    reps: '',
+    weightKg: '',
+    timeValue: '60',
+    timeUnit: 'sec',
+  });
+  assert.equal(plank.valid, true);
+  assert.equal(plank.parsed?.durationSec, 120);
+  assert.equal(plank.parsed?.details, '2 × 60 sec');
+});
+
+test('normalizeAiWorkoutResult sanitizes AI workout payloads and rejects invalid calories', () => {
+  const ok = normalizeAiWorkoutResult({
+    caloriesBurned: 142.6,
+    estimatedDurationMin: 25,
+    intensity: 'moderate',
+    note: 'Great brisk walk!',
+  });
+  assert.deepEqual(ok, {
+    caloriesBurned: 143,
+    estimatedDurationMin: 25,
+    intensity: 'moderate',
+    note: 'Great brisk walk!',
+  });
+
+  assert.equal(normalizeAiWorkoutResult({ caloriesBurned: 0 }), null);
+  assert.equal(normalizeAiWorkoutResult(null), null);
+});
+
+test('getNetCalorieStatus returns in-range at or below limit and over when exceeding limit', () => {
+  assert.equal(getNetCalorieStatus(0, 1850), 'in-range');
+  assert.equal(getNetCalorieStatus(1200, 1850), 'in-range');
+  assert.equal(getNetCalorieStatus(1850, 1850), 'in-range');
+  assert.equal(getNetCalorieStatus(1851, 1850), 'over');
+  assert.equal(getNetCalorieStatus(2400, 1850), 'over');
+});
+
+test('isEditablePastDate allows only 1 day before today and locks older dates and today', () => {
+  const today = '2026-11-26';
+  assert.equal(isEditablePastDate('2026-11-25', today), true);
+  assert.equal(isEditablePastDate('2026-11-26', today), false);
+  assert.equal(isEditablePastDate('2026-11-24', today), false);
+  assert.equal(isEditablePastDate('2026-11-20', today), false);
+  assert.equal(isEditablePastDate('2026-11-27', today), false);
+  assert.equal(isEditablePastDate('2026-11-30', '2026-12-01'), true);
+  assert.equal(isEditablePastDate('2026-11-29', '2026-12-01'), false);
+});
+
 
 

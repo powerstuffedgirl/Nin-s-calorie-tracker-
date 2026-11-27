@@ -343,7 +343,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--ink-secondary)' }}>
               {buildTimeKey
                 ? 'A build-time VITE_GEMINI_API_KEY is already configured for this deployment. You can still store a personal fallback key below if needed.'
-                : 'Used by the AI Meal Tracker on GitHub Pages when VITE_GEMINI_API_KEY is not set at build time. Saved only in this browser\u2019s localStorage.'}
+                : 'Used by the AI Meal Tracker and AI Workout Calculator on GitHub Pages when VITE_GEMINI_API_KEY is not set at build time. Saved only in this browser\u2019s localStorage.'}
             </p>
 
             <form onSubmit={handleSaveApiKey} className="mt-4 space-y-3" noValidate>
@@ -432,7 +432,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               Reset Tracker Data
             </h2>
             <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--ink-secondary)' }}>
-              Erase all sample meals, water logs, and streak history to start fresh at 0—or restore the example week anytime. Your weight, daily targets, and API key stay saved.
+              Erase all sample meals, water logs, workouts, and streak history to start fresh at 0—or restore the example week anytime. Your weight, daily targets, custom exercises, and API key stay saved.
             </p>
 
             <div className="mt-4 flex flex-wrap items-center gap-2.5">
@@ -441,7 +441,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   <button
                     type="button"
                     onClick={() => setPendingResetAction('zero')}
-                    className="btn-theme-gradient inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold text-white cursor-pointer"
+                    className="btn-theme-gradient inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold cursor-pointer"
                   >
                     <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                     Set all data to 0
@@ -459,7 +459,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               ) : pendingResetAction === 'zero' ? (
                 <div className="space-y-2.5 w-full">
                   <p className="text-xs font-semibold" style={{ color: 'var(--ink-primary)' }}>
-                    Erase all meals, hydration logs, and streak history to 0?
+                    Erase all meals, workouts, hydration logs, and streak history to 0?
                   </p>
                   <div className="flex flex-wrap items-center gap-2">
                     <button
@@ -467,7 +467,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                       onClick={() => {
                         onClearDataToZero();
                         setPendingResetAction(null);
-                        setResetNotice('All meals, water logs, and streak cleared to 0 — ready for real tracking.');
+                        setResetNotice('All meals, workouts, water logs, and streak cleared to 0 — ready for real tracking.');
                         window.setTimeout(() => setResetNotice(null), 4000);
                       }}
                       className="min-h-[40px] rounded-xl bg-red-700 px-4 py-2 text-xs font-semibold text-white hover:bg-red-800 cursor-pointer"
